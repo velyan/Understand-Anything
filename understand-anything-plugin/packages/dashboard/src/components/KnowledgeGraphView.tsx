@@ -4,8 +4,6 @@ import {
   ReactFlowProvider,
   Background,
   BackgroundVariant,
-  Controls,
-  MiniMap,
 } from "@xyflow/react";
 import type { Edge, Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -222,13 +220,6 @@ function KnowledgeGraphViewInner() {
         target: e.target,
         style,
         animated: e.type === "contradicts" && (!activeId || !!isConnected),
-        label: isConnected && e.type !== "related" && e.type !== "categorized_under"
-          ? e.type.replace(/_/g, " ")
-          : undefined,
-        labelStyle: { fill: "var(--color-text-muted)", fontSize: 9, opacity: 0.7 },
-        labelBgStyle: { fill: "var(--color-surface)", fillOpacity: 0.9 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 3,
       };
     });
 
@@ -260,23 +251,6 @@ function KnowledgeGraphViewInner() {
           gap={20}
           size={1}
           color="var(--color-border-subtle)"
-        />
-        <Controls />
-        <MiniMap
-          nodeColor={(n) => {
-            const data = n.data as CustomNodeData | undefined;
-            const type = data?.nodeType ?? "article";
-            const colorMap: Record<string, string> = {
-              article: "var(--color-node-article)",
-              entity: "var(--color-node-entity)",
-              topic: "var(--color-node-topic)",
-              claim: "var(--color-node-claim)",
-              source: "var(--color-node-source)",
-            };
-            return colorMap[type] ?? "var(--color-accent)";
-          }}
-          maskColor="var(--glass-bg)"
-          className="!bg-surface !border !border-border-subtle"
         />
       </ReactFlow>
     </div>

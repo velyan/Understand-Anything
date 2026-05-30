@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, lazy, Suspense } from "react";
 import { validateGraph } from "@understand-anything/core/schema";
 import type { GraphIssue } from "@understand-anything/core/schema";
 import { useDashboardStore } from "./store";
@@ -7,11 +7,6 @@ import DomainGraphView from "./components/DomainGraphView";
 import KnowledgeGraphView from "./components/KnowledgeGraphView";
 import SearchBar from "./components/SearchBar";
 import NodeInfo from "./components/NodeInfo";
-import LayerLegend from "./components/LayerLegend";
-import DiffToggle from "./components/DiffToggle";
-import FilterPanel from "./components/FilterPanel";
-import ExportMenu from "./components/ExportMenu";
-import PersonaSelector from "./components/PersonaSelector";
 import ProjectOverview from "./components/ProjectOverview";
 import FileExplorer from "./components/FileExplorer";
 import WarningBanner from "./components/WarningBanner";
@@ -21,7 +16,6 @@ import { useIsMobile } from "./hooks/useIsMobile";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import type { KeyboardShortcut } from "./hooks/useKeyboardShortcuts";
 import { ThemeProvider } from "./themes/index.ts";
-import { ThemePicker } from "./components/ThemePicker.tsx";
 import type { ThemeConfig } from "./themes/index.ts";
 import { I18nProvider, useI18n } from "./contexts/I18nContext.tsx";
 
@@ -39,11 +33,103 @@ const SESSION_TOKEN_KEY = "understand-anything-token";
 const ONBOARDING_DISMISSED_KEY = "ua-onboarding-dismissed-v1";
 type SidebarTab = "info" | "files";
 
+type AdvancedToolsMenuProps = {
+  onShowFiles: () => void;
+  onTogglePathFinder: () => void;
+  onShowKeyboardHelp: () => void;
+};
+
+function AdvancedToolsMenu({
+  onShowFiles,
+  onTogglePathFinder,
+  onShowKeyboardHelp,
+}: AdvancedToolsMenuProps) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const closeAfter = (action: () => void) => {
+    action();
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="group flex items-center gap-2 rounded-full bg-white/65 border border-border-subtle px-4 py-2 text-sm font-semibold text-text-secondary hover:text-text-primary hover:border-accent/25 active:scale-[0.98] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        aria-expanded={open}
+        aria-haspopup="menu"
+      >
+        <span>Menu</span>
+        <span className="h-6 w-6 rounded-full bg-accent/10 text-accent flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5">
+          <svg className={`w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-[calc(100%+0.625rem)] w-[236px] rounded-[22px] border border-border-subtle bg-surface/95 shadow-[0_24px_60px_rgba(47,40,55,0.16)] p-2 z-[100] animate-fade-slide-in"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => closeAfter(onShowFiles)}
+            className="w-full min-h-11 rounded-[16px] px-3.5 py-2.5 text-left text-sm font-medium text-text-primary hover:bg-white/70 active:scale-[0.99] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          >
+            Project files
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => closeAfter(onTogglePathFinder)}
+            className="w-full min-h-11 rounded-[16px] px-3.5 py-2.5 text-left text-sm font-medium text-text-primary hover:bg-white/70 active:scale-[0.99] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          >
+            Find connection
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => closeAfter(onShowKeyboardHelp)}
+            className="w-full min-h-11 rounded-[16px] px-3.5 py-2.5 text-left text-sm font-medium text-text-primary hover:bg-white/70 active:scale-[0.99] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          >
+            Help
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function shouldShowOnboarding(): boolean {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search);
   if (params.get("onboard") === "force") return true;
-  return window.localStorage.getItem(ONBOARDING_DISMISSED_KEY) !== "1";
+  return false;
 }
 
 /** Resolve data file URL — in demo mode, use env var URLs; otherwise use local paths with token. */
@@ -58,6 +144,8 @@ function dataUrl(fileName: string, token: string | null): string {
     };
     const url = envMap[fileName];
     if (url) return url;
+    const basePath = (import.meta.env.BASE_URL ?? "/").replace(/\/?$/, "/");
+    return `${basePath}${fileName}`;
   }
   const path = `/${fileName}`;
   return token ? `${path}?token=${encodeURIComponent(token)}` : path;
@@ -229,19 +317,14 @@ function DashboardContent({
   const graph = useDashboardStore((s) => s.graph);
   const selectedNodeId = useDashboardStore((s) => s.selectedNodeId);
   const tourActive = useDashboardStore((s) => s.tourActive);
-  const persona = useDashboardStore((s) => s.persona);
+  const startTour = useDashboardStore((s) => s.startTour);
+  const stopTour = useDashboardStore((s) => s.stopTour);
   const codeViewerOpen = useDashboardStore((s) => s.codeViewerOpen);
   const codeViewerExpanded = useDashboardStore((s) => s.codeViewerExpanded);
   const expandCodeViewer = useDashboardStore((s) => s.expandCodeViewer);
   const collapseCodeViewer = useDashboardStore((s) => s.collapseCodeViewer);
   const pathFinderOpen = useDashboardStore((s) => s.pathFinderOpen);
   const togglePathFinder = useDashboardStore((s) => s.togglePathFinder);
-  const nodeTypeFilters = useDashboardStore((s) => s.nodeTypeFilters);
-  const toggleNodeTypeFilter = useDashboardStore((s) => s.toggleNodeTypeFilter);
-  const detailLevel = useDashboardStore((s) => s.detailLevel);
-  const setDetailLevel = useDashboardStore((s) => s.setDetailLevel);
-  const showFunctionsInClassView = useDashboardStore((s) => s.showFunctionsInClassView);
-  const toggleShowFunctionsInClassView = useDashboardStore((s) => s.toggleShowFunctionsInClassView);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>("info");
   const [showOnboarding, setShowOnboarding] = useState(shouldShowOnboarding);
@@ -252,12 +335,11 @@ function DashboardContent({
     setShowOnboarding(false);
   }, []);
   const viewMode = useDashboardStore((s) => s.viewMode);
-  const setViewMode = useDashboardStore((s) => s.setViewMode);
-  const isKnowledgeGraph = useDashboardStore((s) => s.isKnowledgeGraph);
   const domainGraph = useDashboardStore((s) => s.domainGraph);
   const layoutIssues = useDashboardStore((s) => s.layoutIssues);
   const isMobile = useIsMobile();
   const { t } = useI18n();
+  const hasTour = (graph?.tour.length ?? 0) > 0;
   const allIssues = useMemo(
     () => [...graphIssues, ...layoutIssues],
     [graphIssues, layoutIssues],
@@ -341,34 +423,6 @@ function DashboardContent({
         },
         category: "Tour",
       },
-      // View toggles
-      {
-        key: "d",
-        description: t.keyboardShortcuts.toggleDiff,
-        action: () => {
-          const state = useDashboardStore.getState();
-          state.toggleDiffMode();
-        },
-        category: "View",
-      },
-      {
-        key: "f",
-        description: t.keyboardShortcuts.toggleFilter,
-        action: () => {
-          const state = useDashboardStore.getState();
-          state.toggleFilterPanel();
-        },
-        category: "View",
-      },
-      {
-        key: "e",
-        description: t.keyboardShortcuts.toggleExport,
-        action: () => {
-          const state = useDashboardStore.getState();
-          state.toggleExportMenu();
-        },
-        category: "View",
-      },
       {
         key: "p",
         description: t.keyboardShortcuts.openPathFinder,
@@ -385,10 +439,9 @@ function DashboardContent({
   // Register keyboard shortcuts
   useKeyboardShortcuts(shortcuts);
 
-  // Determine sidebar content
-  // NodeInfo always takes priority when a node is selected.
-  // Learn mode adds LearnPanel below it; otherwise ProjectOverview shows when idle.
-  const isLearnMode = tourActive || persona === "junior";
+  // Determine sidebar content. The default experience is a guide, with
+  // source file browsing tucked into the small menu.
+  const isLearnMode = tourActive;
   const infoSidebarContent = (
     <>
       {selectedNodeId && <NodeInfo />}
@@ -401,25 +454,32 @@ function DashboardContent({
     </>
   );
 
+  const showSidebarHeader = sidebarTab === "files" || Boolean(selectedNodeId) || tourActive;
   const sidebarContent = (
     <div className="h-full flex flex-col min-h-0">
-      <div className="flex items-center gap-1 p-2 border-b border-border-subtle bg-surface shrink-0">
-        {(["info", "files"] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setSidebarTab(tab)}
-            className={`flex-1 px-3 py-1.5 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors ${
-              sidebarTab === tab
-                ? "bg-accent/15 text-accent"
-                : "text-text-muted hover:text-text-primary hover:bg-elevated"
-            }`}
-          >
-            {tab === "info" ? t.sidebar.info : t.sidebar.files}
-          </button>
-        ))}
-      </div>
-      <div className="flex-1 min-h-0 overflow-auto">
+      {showSidebarHeader && (
+        <div className="px-5 pt-5 pb-2 shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-[10px] uppercase tracking-wide font-semibold text-accent">
+              {sidebarTab === "files"
+                ? "Project files"
+                : selectedNodeId
+                  ? "Details"
+                  : "Tour"}
+            </div>
+            {sidebarTab === "files" ? (
+              <button
+                type="button"
+                onClick={() => setSidebarTab("info")}
+                className="rounded-full bg-white/60 border border-border-subtle px-3 py-1.5 text-xs text-text-secondary hover:text-accent transition-colors"
+              >
+                Overview
+              </button>
+            ) : null}
+          </div>
+        </div>
+      )}
+      <div className="flex-1 min-h-0 overflow-auto px-1 pb-2">
         {sidebarTab === "files" ? <FileExplorer /> : infoSidebarContent}
       </div>
     </div>
@@ -439,180 +499,50 @@ function DashboardContent({
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-root text-text-primary noise-overlay">
+    <div className="h-[100dvh] w-screen flex flex-col bg-root text-text-primary noise-overlay moya-dashboard-shell overflow-hidden p-3">
       {/* Header */}
-      <header className="flex items-center px-3 sm:px-5 py-3 bg-surface border-b border-border-subtle shrink-0 gap-2 sm:gap-4">
-        {/* Left — fixed */}
-        <div className="flex items-center gap-3 sm:gap-5 shrink-0 min-w-0">
-          <h1 className="font-heading text-base sm:text-lg text-text-primary tracking-wide truncate max-w-[160px] sm:max-w-[220px] lg:max-w-none">
-            {graph?.project.name ?? t.common.appName}
-          </h1>
-          <div className="w-px h-5 bg-border-subtle hidden sm:block" />
-          <PersonaSelector />
-          {graph && !isKnowledgeGraph && domainGraph && (
-            <>
-              <div className="w-px h-5 bg-border-subtle" />
-              <div className="flex items-center bg-elevated rounded-lg p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("domain")}
-                  title={t.drawer.domain}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    viewMode === "domain"
-                      ? "bg-accent/20 text-accent"
-                      : "text-text-muted hover:text-text-secondary"
-                  }`}
-                >
-                  {t.drawer.domain}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("structural")}
-                  title={t.drawer.structural}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    viewMode === "structural"
-                      ? "bg-accent/20 text-accent"
-                      : "text-text-muted hover:text-text-secondary"
-                  }`}
-                >
-                  {t.drawer.structural}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Middle — scrollable legends */}
-        <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide">
-          <div className="flex items-center gap-4 w-max">
-            <DiffToggle />
-            {/* Detail level: file view (architecture) / class view (code structure) */}
-            {!isKnowledgeGraph && viewMode !== "domain" && (
-              <>
-                <div className="w-px h-5 bg-border-subtle" />
-                <div className="flex items-center bg-elevated rounded-lg p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setDetailLevel("file")}
-                    title={t.detailLevel.filesTitle}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                      detailLevel === "file"
-                        ? "bg-accent/20 text-accent"
-                        : "text-text-muted hover:text-text-secondary"
-                    }`}
-                  >
-                    {t.detailLevel.files}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDetailLevel("class")}
-                    title={t.detailLevel.classesTitle}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                      detailLevel === "class"
-                        ? "bg-accent/20 text-accent"
-                        : "text-text-muted hover:text-text-secondary"
-                    }`}
-                  >
-                    {t.detailLevel.classes}
-                  </button>
-                </div>
-                {detailLevel === "class" && (
-                  <button
-                    type="button"
-                    onClick={toggleShowFunctionsInClassView}
-                    title={t.detailLevel.fnTitle}
-                    className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded border transition-colors ${
-                      showFunctionsInClassView
-                        ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
-                        : "border-border-medium bg-elevated text-text-muted hover:text-text-secondary"
-                    }`}
-                  >
-                    {t.detailLevel.fn}
-                  </button>
-                )}
-              </>
-            )}
-            <div className="flex items-center gap-1">
-              {(isKnowledgeGraph ? [
-                { key: "knowledge" as const, label: t.nodeTypeLabels.all, color: "var(--color-node-article)" },
-              ] : [
-                { key: "code" as const, label: t.nodeTypeLabels.code, color: "var(--color-node-file)" },
-                { key: "config" as const, label: t.nodeTypeLabels.config, color: "var(--color-node-config)" },
-                { key: "docs" as const, label: t.nodeTypeLabels.docs, color: "var(--color-node-document)" },
-                { key: "infra" as const, label: t.nodeTypeLabels.infra, color: "var(--color-node-service)" },
-                { key: "data" as const, label: t.nodeTypeLabels.data, color: "var(--color-node-table)" },
-                { key: "domain" as const, label: t.nodeTypeLabels.domain, color: "var(--color-node-concept)" },
-                { key: "knowledge" as const, label: t.nodeTypeLabels.knowledge, color: "var(--color-node-article)" },
-              ]).map((cat) => (
-                <button
-                  key={cat.key}
-                  onClick={() => toggleNodeTypeFilter(cat.key)}
-                  className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded border transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-                    nodeTypeFilters[cat.key] !== false
-                      ? "border-border-medium bg-elevated text-text-secondary hover:text-text-primary"
-                      : "border-transparent bg-transparent text-text-muted/40 line-through hover:text-text-muted"
-                  }`}
-                  title={`${nodeTypeFilters[cat.key] !== false ? "Hide" : "Show"} ${cat.label} nodes`}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{
-                      backgroundColor: cat.color,
-                      opacity: nodeTypeFilters[cat.key] !== false ? 1 : 0.3,
-                    }}
-                  />
-                  {cat.label}
-                </button>
-              ))}
+      <header className="moya-app-chrome relative z-50 flex items-center px-4 sm:px-5 py-3 shrink-0 gap-4 rounded-[24px]">
+        <div className="flex items-center gap-3 shrink-0 min-w-0">
+          <div className="h-11 w-11 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+            <span className="font-heading text-sm font-bold text-accent">M</span>
+          </div>
+          <div className="min-w-0">
+            <div className="font-heading text-sm font-bold text-text-primary tracking-normal truncate max-w-[220px]">
+              Moya Understand
             </div>
-            <LayerLegend />
+            <div className="text-[11px] text-text-muted truncate max-w-[220px]">
+              {graph?.project.name ?? t.common.appName}
+            </div>
           </div>
         </div>
 
-        {/* Right — fixed actions */}
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          <FilterPanel />
-          <ExportMenu />
-          <button
-            onClick={togglePathFinder}
-            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-sm bg-elevated text-text-secondary hover:text-text-primary transition-colors"
-            title={t.pathFinder.title}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div className="flex-1 min-w-0 hidden lg:block">
+          <p className="text-sm text-text-secondary truncate">
+            A softer way into the project.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
+          {hasTour && (
+            <button
+              type="button"
+              onClick={tourActive ? stopTour : startTour}
+              className="group flex items-center gap-2 rounded-full bg-accent text-white px-4 py-2 text-sm font-semibold shadow-[0_14px_28px_rgba(198,111,146,0.22)] active:scale-[0.98] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-              />
-            </svg>
-            <span className="hidden md:inline">{t.common.path}</span>
-          </button>
-          <ThemePicker />
-          <button
-            onClick={() => setShowKeyboardHelp(true)}
-            className="text-text-muted hover:text-accent transition-colors"
-            title={t.keyboardShortcuts.showHelp}
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </button>
+              <span>{tourActive ? "Close guide" : "Guide me"}</span>
+              <span className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={tourActive ? "M6 18L18 6M6 6l12 12" : "M5 12h14m-6-6 6 6-6 6"} />
+                </svg>
+              </span>
+            </button>
+          )}
+
+          <AdvancedToolsMenu
+            onShowFiles={() => setSidebarTab("files")}
+            onTogglePathFinder={togglePathFinder}
+            onShowKeyboardHelp={() => setShowKeyboardHelp(true)}
+          />
         </div>
       </header>
 
@@ -626,35 +556,37 @@ function DashboardContent({
 
       {/* Error banner */}
       {loadError && (
-        <div className="px-5 py-3 bg-red-900/30 border-b border-red-700 text-red-200 text-sm">
+        <div className="mx-1 mt-2 px-5 py-3 rounded-2xl bg-red-500/10 border border-red-500/25 text-red-700 text-sm">
           {loadError}
         </div>
       )}
 
       {/* Main content: Graph + Sidebar */}
-      <div className="flex-1 flex min-h-0 relative">
+      <div className="flex-1 flex min-h-0 relative gap-3 pt-3">
         {/* Graph area */}
-        <div className="flex-1 min-w-0 min-h-0 relative">
-          {viewMode === "knowledge" ? (
-            <KnowledgeGraphView />
-          ) : viewMode === "domain" && domainGraph ? (
-            <DomainGraphView />
-          ) : (
-            <GraphView />
-          )}
-          <div className="absolute top-3 right-3 text-sm text-text-muted/60 pointer-events-none select-none">
-            {t.common.pressKeyboard}
+        <div className="moya-graph-shell flex-1 min-w-0 min-h-0 relative">
+          <div className="moya-graph-core absolute inset-0">
+            {viewMode === "knowledge" ? (
+              <KnowledgeGraphView />
+            ) : viewMode === "domain" && domainGraph ? (
+              <DomainGraphView />
+            ) : (
+              <GraphView />
+            )}
+            <div className="absolute top-4 right-4 text-xs text-text-muted/70 pointer-events-none select-none bg-white/55 border border-white/70 rounded-full px-3 py-1.5 shadow-[0_8px_18px_rgba(64,47,75,0.06)]">
+              Choose a starting point
+            </div>
           </div>
         </div>
 
         {/* Right sidebar — telescopes at narrower widths */}
-        <aside className="w-[260px] md:w-[300px] lg:w-[360px] shrink-0 bg-surface border-l border-border-subtle overflow-auto">
+        <aside className="moya-panel-shell w-[280px] md:w-[320px] lg:w-[380px] shrink-0 overflow-hidden">
           {sidebarContent}
         </aside>
 
         {/* Code viewer slide-up overlay (collapsed state) */}
         {codeViewerOpen && !codeViewerExpanded && (
-          <div className="absolute bottom-0 left-0 right-0 h-[40vh] bg-surface border-t border-border-subtle animate-slide-up z-20 overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 h-[40vh] bg-surface border border-border-subtle rounded-t-[24px] animate-slide-up z-20 overflow-hidden shadow-[0_-18px_42px_rgba(64,47,75,0.12)]">
             <Suspense fallback={null}>
               <CodeViewer accessToken={accessToken} onExpand={expandCodeViewer} />
             </Suspense>
@@ -665,11 +597,11 @@ function DashboardContent({
       {/* Expanded code viewer modal */}
       {codeViewerOpen && codeViewerExpanded && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 sm:p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#2f2837]/50 backdrop-blur-sm p-4 sm:p-6"
           onMouseDown={collapseCodeViewer}
         >
           <div
-            className="w-[calc(100vw-32px)] max-w-[1120px] h-[calc(100vh-32px)] sm:h-[calc(100vh-48px)] max-h-[820px] rounded-lg border border-border-medium bg-surface shadow-2xl overflow-hidden"
+            className="w-[calc(100vw-32px)] max-w-[1120px] h-[calc(100vh-32px)] sm:h-[calc(100vh-48px)] max-h-[820px] rounded-[24px] border border-border-medium bg-surface shadow-[0_26px_70px_rgba(47,40,55,0.22)] overflow-hidden"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <Suspense fallback={null}>

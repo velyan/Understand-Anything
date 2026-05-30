@@ -42,7 +42,7 @@ export function ThemePicker() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 px-2 py-1 rounded text-xs text-text-secondary hover:text-text-primary transition-colors"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs bg-white/60 border border-border-subtle text-text-secondary hover:text-text-primary hover:border-accent/25 transition-colors"
         title={t.themePicker.changeTheme}
       >
         <svg
@@ -65,10 +65,10 @@ export function ThemePicker() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-64 rounded-lg glass-heavy shadow-xl z-50 p-3 space-y-3">
+        <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl glass-heavy shadow-[0_18px_44px_rgba(64,47,75,0.14)] z-50 p-3 space-y-3">
           {/* Presets */}
           <div>
-            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">
+            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wide mb-2">
               {t.themePicker.theme}
             </div>
             <div className="space-y-1">
@@ -76,10 +76,10 @@ export function ThemePicker() {
                 <button
                   key={p.id}
                   onClick={() => handlePreset(p.id)}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors ${
                     p.id === config.presetId
                       ? "bg-accent/15 text-accent"
-                      : "text-text-secondary hover:text-text-primary hover:bg-elevated"
+                      : "text-text-secondary hover:text-text-primary hover:bg-white/60"
                   }`}
                 >
                   {/* Color preview dots */}
@@ -120,7 +120,7 @@ export function ThemePicker() {
 
           {/* Accent swatches */}
           <div>
-            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">
+            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wide mb-2">
               {t.themePicker.accentColor}
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -128,7 +128,7 @@ export function ThemePicker() {
                 <button
                   key={swatch.id}
                   onClick={() => setAccent(swatch.id)}
-                  className={`w-6 h-6 rounded-full transition-transform hover:scale-110 ${
+                  className={`w-7 h-7 rounded-full transition-transform hover:scale-110 ${
                     swatch.id === config.accentId
                       ? "ring-2 ring-text-primary ring-offset-1 ring-offset-root"
                       : ""
@@ -142,7 +142,7 @@ export function ThemePicker() {
 
           {/* Heading font */}
           <div>
-            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">
+            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wide mb-2">
               {t.themePicker.headingFont}
             </div>
             <div className="flex gap-1">
@@ -154,10 +154,10 @@ export function ThemePicker() {
                 <button
                   key={opt.id}
                   onClick={() => setHeadingFont(opt.id)}
-                  className={`flex-1 px-2 py-1.5 rounded text-xs transition-colors ${
+                  className={`flex-1 px-2 py-2 rounded-xl text-xs transition-colors ${
                     (config.headingFont ?? "serif") === opt.id
                       ? "bg-accent/15 text-accent"
-                      : "text-text-secondary hover:text-text-primary hover:bg-elevated"
+                      : "text-text-secondary hover:text-text-primary hover:bg-white/60"
                   }`}
                   style={{
                     fontFamily:

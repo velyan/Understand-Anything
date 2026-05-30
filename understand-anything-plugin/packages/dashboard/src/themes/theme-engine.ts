@@ -10,22 +10,22 @@ export function hexToRgb(hex: string): string {
 function deriveFromAccent(accentHex: string, isDark: boolean): Record<string, string> {
   const rgb = hexToRgb(accentHex);
   return {
-    "color-border-subtle": `rgba(${rgb}, ${isDark ? 0.12 : 0.1})`,
-    "color-border-medium": `rgba(${rgb}, ${isDark ? 0.25 : 0.18})`,
-    "glass-bg": isDark ? "rgba(20, 20, 20, 0.8)" : "rgba(255, 255, 255, 0.8)",
-    "glass-bg-heavy": isDark ? "rgba(20, 20, 20, 0.95)" : "rgba(255, 255, 255, 0.95)",
-    "glass-border": `rgba(${rgb}, ${isDark ? 0.1 : 0.08})`,
-    "glass-border-heavy": `rgba(${rgb}, ${isDark ? 0.15 : 0.12})`,
+    "color-border-subtle": `rgba(${rgb}, ${isDark ? 0.12 : 0.13})`,
+    "color-border-medium": `rgba(${rgb}, ${isDark ? 0.25 : 0.22})`,
+    "glass-bg": isDark ? "rgba(20, 20, 20, 0.8)" : "rgba(255, 250, 252, 0.78)",
+    "glass-bg-heavy": isDark ? "rgba(20, 20, 20, 0.95)" : "rgba(255, 250, 252, 0.94)",
+    "glass-border": `rgba(${rgb}, ${isDark ? 0.1 : 0.1})`,
+    "glass-border-heavy": `rgba(${rgb}, ${isDark ? 0.15 : 0.16})`,
     "scrollbar-thumb": `rgba(${rgb}, 0.2)`,
     "scrollbar-thumb-hover": `rgba(${rgb}, 0.35)`,
-    "glow-accent": `rgba(${rgb}, 0.15)`,
-    "glow-accent-strong": `rgba(${rgb}, 0.4)`,
-    "glow-accent-pulse": `rgba(${rgb}, 0.6)`,
-    "color-edge": `rgba(${rgb}, 0.3)`,
-    "color-edge-dim": `rgba(${rgb}, 0.08)`,
-    "color-edge-dot": `rgba(${rgb}, 0.15)`,
-    "color-accent-overlay-bg": `rgba(${rgb}, 0.05)`,
-    "color-accent-overlay-border": `rgba(${rgb}, 0.25)`,
+    "glow-accent": `rgba(${rgb}, ${isDark ? 0.15 : 0.18})`,
+    "glow-accent-strong": `rgba(${rgb}, ${isDark ? 0.4 : 0.24})`,
+    "glow-accent-pulse": `rgba(${rgb}, ${isDark ? 0.6 : 0.32})`,
+    "color-edge": `rgba(${rgb}, ${isDark ? 0.3 : 0.34})`,
+    "color-edge-dim": `rgba(${rgb}, ${isDark ? 0.08 : 0.11})`,
+    "color-edge-dot": `rgba(${rgb}, ${isDark ? 0.15 : 0.2})`,
+    "color-accent-overlay-bg": `rgba(${rgb}, ${isDark ? 0.05 : 0.08})`,
+    "color-accent-overlay-border": `rgba(${rgb}, ${isDark ? 0.25 : 0.28})`,
     "kbd-bg": `rgba(${rgb}, 0.1)`,
   };
 }
@@ -44,6 +44,9 @@ export function applyTheme(config: ThemeConfig): void {
   style.setProperty("--color-accent", accent.accent);
   style.setProperty("--color-accent-dim", accent.accentDim);
   style.setProperty("--color-accent-bright", accent.accentBright);
+  style.setProperty("--color-gold", accent.accent);
+  style.setProperty("--color-gold-dim", accent.accentDim);
+  style.setProperty("--color-gold-bright", accent.accentBright);
 
   // 3. Apply derived values
   const derived = deriveFromAccent(accent.accent, preset.isDark);

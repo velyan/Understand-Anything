@@ -81,18 +81,18 @@ export default function WarningBanner({ issues }: WarningBannerProps) {
 
   // Fatal issues escalate the banner from amber (warning) to red (error).
   const containerClasses = hasFatal
-    ? "bg-red-900/25 border-b border-red-700 text-red-200 text-sm"
-    : "bg-amber-900/20 border-b border-amber-700 text-amber-200 text-sm";
+    ? "mx-1 mt-2 rounded-2xl bg-red-500/10 border border-red-500/25 text-red-800 text-sm"
+    : "mx-1 mt-2 rounded-2xl bg-node-schema/10 border border-node-schema/25 text-[#7c5f18] text-sm";
   const hoverClasses = hasFatal
-    ? "hover:bg-red-900/15"
-    : "hover:bg-amber-900/10";
-  const iconClasses = hasFatal ? "text-red-400" : "text-amber-400";
-  const hintClasses = hasFatal ? "text-red-400/60" : "text-amber-400/60";
-  const dividerClasses = hasFatal ? "border-red-700/50" : "border-amber-700/50";
-  const footerTextClasses = hasFatal ? "text-red-200/70" : "text-amber-200/60";
+    ? "hover:bg-red-500/15"
+    : "hover:bg-node-schema/15";
+  const iconClasses = hasFatal ? "text-red-600" : "text-node-schema";
+  const hintClasses = hasFatal ? "text-red-700/60" : "text-[#7c5f18]/60";
+  const dividerClasses = hasFatal ? "border-red-500/25" : "border-node-schema/25";
+  const footerTextClasses = hasFatal ? "text-red-700/70" : "text-[#7c5f18]/70";
   const buttonClasses = hasFatal
-    ? "bg-red-800/40 text-red-200 hover:bg-red-800/60"
-    : "bg-amber-800/40 text-amber-200 hover:bg-amber-800/60";
+    ? "bg-red-500/10 text-red-700 hover:bg-red-500/20 border border-red-500/25"
+    : "bg-node-schema/10 text-[#7c5f18] hover:bg-node-schema/20 border border-node-schema/25";
   const footerCopy = hasFatal
     ? "Copy these issues and file a bug report on GitHub"
     : "Copy these issues and ask your agent to fix them in knowledge-graph.json";
@@ -153,15 +153,15 @@ export default function WarningBanner({ issues }: WarningBannerProps) {
             {/* Fatal issues — top of list, red, most prominent */}
             {fatal.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-1">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-red-600 mb-1">
                   Fatal ({fatal.length})
                 </h4>
                 {fatal.map((issue, i) => (
                   <div
                     key={`ft-${i}`}
-                    className="flex items-start gap-2 py-0.5 pl-2 text-red-200"
+                    className="flex items-start gap-2 py-0.5 pl-2 text-red-700"
                   >
-                    <span className="text-red-400 shrink-0 mt-0.5">
+                    <span className="text-red-600 shrink-0 mt-0.5">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
@@ -180,12 +180,12 @@ export default function WarningBanner({ issues }: WarningBannerProps) {
             {/* Auto-corrected issues */}
             {autoCorrected.length > 0 && (
               <div className={fatal.length > 0 ? "mt-2" : ""}>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-1">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-node-schema mb-1">
                   Auto-corrected ({autoCorrected.length})
                 </h4>
                 {autoCorrected.map((issue, i) => (
-                  <div key={`ac-${i}`} className="flex items-start gap-2 py-0.5 pl-2 text-amber-200/80">
-                    <span className="text-amber-400 shrink-0 mt-0.5">
+                  <div key={`ac-${i}`} className="flex items-start gap-2 py-0.5 pl-2 text-[#7c5f18]/80">
+                    <span className="text-node-schema shrink-0 mt-0.5">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
@@ -199,12 +199,12 @@ export default function WarningBanner({ issues }: WarningBannerProps) {
             {/* Dropped issues */}
             {dropped.length > 0 && (
               <div className={fatal.length > 0 || autoCorrected.length > 0 ? "mt-2" : ""}>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-orange-400 mb-1">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-node-endpoint mb-1">
                   Dropped ({dropped.length})
                 </h4>
                 {dropped.map((issue, i) => (
-                  <div key={`dr-${i}`} className="flex items-start gap-2 py-0.5 pl-2 text-orange-300/80">
-                    <span className="text-orange-400 shrink-0 mt-0.5">
+                  <div key={`dr-${i}`} className="flex items-start gap-2 py-0.5 pl-2 text-node-endpoint/80">
+                    <span className="text-node-endpoint shrink-0 mt-0.5">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -222,7 +222,7 @@ export default function WarningBanner({ issues }: WarningBannerProps) {
             <button
               type="button"
               onClick={handleCopy}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors shrink-0 ml-4 ${buttonClasses}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors shrink-0 ml-4 ${buttonClasses}`}
             >
               {copied ? (
                 <>

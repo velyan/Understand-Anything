@@ -32,17 +32,17 @@ export default function KeyboardShortcutsHelp({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+      className="fixed inset-0 bg-[#2f2837]/40 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="glass rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-auto m-4"
+        className="glass-heavy rounded-[24px] shadow-[0_26px_70px_rgba(47,40,55,0.22)] max-w-2xl w-full max-h-[80vh] overflow-auto m-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="sticky top-0 glass-heavy border-b border-border-subtle px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-heading text-text-primary">
+            <h2 className="text-xl font-heading font-bold text-text-primary tracking-normal">
               {t.keyboardShortcuts.title}
             </h2>
             <p className="text-xs text-text-muted mt-1">
@@ -73,14 +73,14 @@ export default function KeyboardShortcutsHelp({
         <div className="p-6 space-y-6">
           {Object.entries(groupedShortcuts).map(([category, categoryShortcuts]) => (
             <div key={category}>
-              <h3 className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-semibold text-accent uppercase tracking-wide mb-3">
                 {categoryTranslations[category] ?? category}
               </h3>
               <div className="space-y-2">
                 {categoryShortcuts.map((shortcut, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between py-2 px-3 rounded hover:bg-elevated transition-colors"
+                    className="flex items-center justify-between py-2 px-3 rounded-2xl hover:bg-white/60 transition-colors"
                   >
                     <span className="text-sm text-text-secondary">
                       {shortcut.description}

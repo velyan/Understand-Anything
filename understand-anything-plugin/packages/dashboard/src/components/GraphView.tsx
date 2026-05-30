@@ -8,8 +8,6 @@ import {
   useReactFlow,
   Background,
   BackgroundVariant,
-  Controls,
-  MiniMap,
 } from "@xyflow/react";
 import type { Edge, Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -52,7 +50,6 @@ import {
 } from "../utils/edgeAggregation";
 import { deriveContainers } from "../utils/containers";
 import type { DerivedContainer } from "../utils/containers";
-import { computeLayerStats } from "../utils/layerStats";
 
 const nodeTypes = {
   custom: CustomNode,
@@ -240,13 +237,7 @@ function useOverviewGraph() {
       }
     }
 
-    // Create cluster nodes. Per-layer aggregation goes through
-    // `computeLayerStats`, which iterates `layer.nodeIds` against the
-    // `nodesById` index — O(K) per layer instead of the previous
-    // O(N) Array.filter that ran `layer.nodeIds.includes(n.id)` (#102).
     const clusterNodes: LayerClusterFlowNode[] = layers.map((layer, i) => {
-      const { aggregateComplexity } = computeLayerStats(layer, nodesById);
-
       return {
         id: layer.id,
         type: "layer-cluster" as const,
@@ -255,8 +246,6 @@ function useOverviewGraph() {
           layerId: layer.id,
           layerName: layer.name,
           layerDescription: layer.description,
-          fileCount: layer.nodeIds.length,
-          aggregateComplexity,
           layerColorIndex: i,
           searchMatchCount: searchMatchByLayer.get(layer.id),
           onDrillIn: drillIntoLayer,
@@ -270,12 +259,10 @@ function useOverviewGraph() {
       id: `le-${i}`,
       source: agg.sourceLayerId,
       target: agg.targetLayerId,
-      label: `${agg.count}`,
       style: {
         stroke: "rgba(212,165,116,0.4)",
         strokeWidth: Math.min(1 + Math.log2(agg.count + 1), 5),
       },
-      labelStyle: { fill: "#a39787", fontSize: 11, fontWeight: 600 },
     }));
 
     const dims = new Map<string, { width: number; height: number }>();
@@ -575,12 +562,7 @@ function useLayerDetailTopology(): LayerDetailTopology & {
         id: `agg-${i}`,
         source: agg.sourceContainerId,
         target: agg.targetContainerId,
-        label: String(agg.count),
         style: baseStyle,
-        labelStyle: {
-          fill: diffMode ? "rgba(163,151,135,0.3)" : "#a39787",
-          fontSize: 11,
-        },
       };
     });
 
@@ -595,7 +577,6 @@ function useLayerDetailTopology(): LayerDetailTopology & {
       data: {
         targetLayerId: portal.layerId,
         targetLayerName: portal.layerName,
-        connectionCount: portal.connectionCount,
         layerColorIndex: layerIndexMap.get(portal.layerId) ?? 0,
         onNavigate: drillIntoLayer,
       },
@@ -1226,9 +1207,7 @@ function useLayerDetailGraph() {
           id: `inflated-${key}`,
           source: realSrc,
           target: realTgt,
-          label: m.type,
           style: { stroke: "rgba(212,165,116,0.5)", strokeWidth: 1.5 },
-          labelStyle: { fill: "#a39787", fontSize: 10 },
         });
       }
     }
@@ -1244,9 +1223,7 @@ function useLayerDetailGraph() {
         id: key,
         source: e.source,
         target: e.target,
-        label: e.type,
         style: { stroke: "rgba(212,165,116,0.5)", strokeWidth: 1.5 },
-        labelStyle: { fill: "#a39787", fontSize: 10 },
       });
     }
     return out;
@@ -1271,10 +1248,10 @@ function useLayerDetailGraph() {
       if ((edge.style as Record<string, unknown>)?.strokeDasharray) return edge;
 
       if (isSelectedEdge) {
-        return { ...edge, animated: true, style: { stroke: "rgba(212,165,116,0.8)", strokeWidth: 2.5 }, labelStyle: { fill: "#d4a574", fontSize: 11, fontWeight: 600 } };
+        return { ...edge, animated: true, style: { stroke: "rgba(212,165,116,0.8)", strokeWidth: 2.5 } };
       }
       // Fade unrelated edges
-      return { ...edge, animated: false, style: { stroke: "rgba(212,165,116,0.08)", strokeWidth: 1 }, labelStyle: { fill: "rgba(163,151,135,0.2)", fontSize: 10 } };
+      return { ...edge, animated: false, style: { stroke: "rgba(212,165,116,0.08)", strokeWidth: 1 } };
     });
   }, [expandedEdges, topo.portalEdges, selectedNodeId]);
 
@@ -1512,7 +1489,7 @@ function GraphViewInner() {
         <div className="absolute top-14 left-1/2 -translate-x-1/2 z-10">
           <button
             onClick={() => setFocusNode(null)}
-            className="px-4 py-2 rounded-full bg-elevated border border-gold/30 text-gold text-xs font-semibold tracking-wider uppercase hover:bg-gold/10 transition-colors flex items-center gap-2 shadow-lg"
+            className="px-4 py-2 rounded-full bg-white/80 border border-gold/30 text-gold text-xs font-semibold tracking-wide uppercase hover:bg-gold/10 transition-colors flex items-center gap-2 shadow-[0_12px_28px_rgba(64,47,75,0.1)]"
           >
             <span>Showing neighborhood</span>
             <span className="text-text-muted">&times;</span>
@@ -1539,14 +1516,9 @@ function GraphViewInner() {
         minZoom={0.01}
         maxZoom={2}
         colorMode={preset.isDark ? "dark" : "light"}
+        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} color="var(--color-edge-dot)" gap={20} size={1} />
-        <Controls />
-        <MiniMap
-          nodeColor="var(--color-elevated)"
-          maskColor="var(--glass-bg)"
-          className="!bg-surface !border !border-border-subtle"
-        />
         <TourFitView />
         <SelectedNodeFitView />
       </ReactFlow>
@@ -1558,12 +1530,13 @@ function GraphViewInner() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(10,10,10,0.5)",
+            background: "rgba(248, 243, 247, 0.72)",
+            backdropFilter: "blur(8px)",
             pointerEvents: "none",
             zIndex: 10,
           }}
         >
-          <span style={{ color: "#d4a574", fontSize: 14 }}>
+          <span style={{ color: "var(--color-accent)", fontSize: 14, fontWeight: 600 }}>
             {tourFitPending ? "Locating tour highlight…" : "Computing layout…"}
           </span>
         </div>

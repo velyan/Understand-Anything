@@ -13,13 +13,13 @@ export default function Breadcrumb() {
   return (
     <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
       {navigationLevel === "overview" && (
-        <div className="px-4 py-2 rounded-full bg-elevated border border-border-subtle text-xs font-semibold tracking-wider uppercase text-text-secondary shadow-lg">
+        <div className="px-4 py-2 rounded-full bg-white/80 border border-border-subtle text-xs font-semibold tracking-wide uppercase text-text-secondary shadow-[0_12px_28px_rgba(64,47,75,0.08)]">
           {t.breadcrumb.projectOverview}
         </div>
       )}
 
       {navigationLevel === "layer-detail" && (
-        <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-elevated border border-gold/30 text-xs font-semibold tracking-wider uppercase shadow-lg">
+        <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/80 border border-gold/30 text-xs font-semibold tracking-wide uppercase shadow-[0_12px_28px_rgba(64,47,75,0.08)]">
           <button
             onClick={navigateToOverview}
             className="text-gold hover:text-gold-bright transition-colors"

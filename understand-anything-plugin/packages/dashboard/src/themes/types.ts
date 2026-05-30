@@ -1,4 +1,5 @@
 export type PresetId =
+  | "moya-soft"
   | "dark-gold"
   | "dark-ocean"
   | "dark-forest"
@@ -31,6 +32,7 @@ export interface ThemeConfig {
 }
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  presetId: "dark-gold",
-  accentId: "gold",
+  presetId: "moya-soft",
+  accentId: "bloom",
+  headingFont: "sans",
 };

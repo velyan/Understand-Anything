@@ -29,36 +29,6 @@ const typeColors: Record<NodeType, string> = {
   source: "var(--color-node-source)",
 };
 
-const typeTextColors: Record<NodeType, string> = {
-  file: "text-node-file",
-  function: "text-node-function",
-  class: "text-node-class",
-  module: "text-node-module",
-  concept: "text-node-concept",
-  config: "text-node-config",
-  document: "text-node-document",
-  service: "text-node-service",
-  table: "text-node-table",
-  endpoint: "text-node-endpoint",
-  pipeline: "text-node-pipeline",
-  schema: "text-node-schema",
-  resource: "text-node-resource",
-  domain: "text-node-concept",
-  flow: "text-node-pipeline",
-  step: "text-node-function",
-  article: "text-node-article",
-  entity: "text-node-entity",
-  topic: "text-node-topic",
-  claim: "text-node-claim",
-  source: "text-node-source",
-};
-
-const complexityColors: Record<string, string> = {
-  simple: "text-node-function",
-  moderate: "text-accent-dim",
-  complex: "text-[#c97070]",
-};
-
 export interface CustomNodeData extends Record<string, unknown> {
   label: string;
   nodeType: string;
@@ -87,8 +57,6 @@ function CustomNodeComponent({
 }: NodeProps<CustomFlowNode>) {
   const knownType = data.nodeType as NodeType;
   const barColor = typeColors[knownType] ?? typeColors.file;
-  const textColor = typeTextColors[knownType] ?? typeTextColors.file;
-  const complexityColor = complexityColors[data.complexity] ?? complexityColors.simple;
   const { t } = useI18n();
 
   if (import.meta.env.DEV && !(knownType in typeColors)) {
@@ -133,46 +101,48 @@ function CustomNodeComponent({
 
   return (
     <div
-      className={`relative rounded-lg bg-elevated border border-border-subtle ${extraClass} min-w-[180px] max-w-[220px] overflow-hidden transition-[box-shadow,outline,opacity,filter] duration-200 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)]`}
+      className={`moya-node-card relative rounded-[20px] ${extraClass} min-w-[190px] max-w-[230px] overflow-hidden transition-[box-shadow,outline,opacity,filter,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer group`}
       onClick={() => data.onNodeClick?.(id)}
     >
-      {/* Left color bar */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
-        style={{ backgroundColor: barColor }}
-      />
-
       <Handle
         type="target"
         position={Position.Top}
-        className="!bg-text-muted !w-2 !h-2"
+        className="!bg-accent-dim !border-white !w-2.5 !h-2.5"
       />
 
-      <div className="pl-4 pr-3 py-2">
-        <div className="flex items-center justify-between mb-1">
-          <span className={`text-[10px] font-semibold uppercase tracking-wider ${textColor}`}>
-            {data.nodeType}
-          </span>
-          <div className="flex items-center gap-1.5">
-            <span className={`text-[9px] font-mono ${complexityColor}`}>
-              {data.complexity}
+      <div className="relative px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="h-2.5 w-2.5 rounded-full shrink-0 shadow-[0_0_0_4px_rgba(255,255,255,0.75)]"
+              style={{ backgroundColor: barColor }}
+            />
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
+              Part
             </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-text-muted">
             {data.tags?.includes("tested") && (
               <span
-                className="inline-block w-1.5 h-1.5 rounded-full bg-node-function shadow-[0_0_4px_rgba(90,158,111,0.6)]"
+                className="inline-block w-2 h-2 rounded-full bg-node-function shadow-[0_0_7px_rgba(95,150,127,0.46)]"
                 role="img"
                 aria-label={t.customNode.tested}
                 title={t.customNode.hasTests}
               />
             )}
+            <span className="h-6 w-6 rounded-full bg-white/70 border border-white/80 text-accent flex items-center justify-center opacity-70 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:opacity-100">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
           </div>
         </div>
 
-        <div className="text-sm font-heading text-text-primary truncate" title={data.label}>
+        <div className="text-sm font-heading font-bold text-text-primary truncate tracking-normal" title={data.label}>
           {truncatedName}
         </div>
 
-        <div className="text-[11px] text-text-secondary mt-1 line-clamp-2 leading-tight">
+        <div className="text-[11px] text-text-secondary mt-1.5 line-clamp-2 leading-relaxed">
           {data.summary}
         </div>
       </div>
@@ -180,7 +150,7 @@ function CustomNodeComponent({
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-text-muted !w-2 !h-2"
+        className="!bg-accent-dim !border-white !w-2.5 !h-2.5"
       />
     </div>
   );

@@ -219,7 +219,7 @@ export default function ExportMenu() {
     <div ref={containerRef} className="relative">
       <button
         onClick={toggleExportMenu}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-elevated text-text-secondary hover:text-text-primary transition-colors"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm bg-white/60 border border-border-subtle text-text-secondary hover:text-text-primary hover:border-accent/25 transition-colors"
         title={t.export.title}
       >
         <svg
@@ -239,12 +239,12 @@ export default function ExportMenu() {
       </button>
 
       {exportMenuOpen && (
-        <div className="absolute right-0 top-full mt-2 w-52 glass rounded-lg shadow-xl overflow-hidden animate-fade-slide-in z-50">
+        <div className="absolute right-0 top-full mt-2 w-56 glass-heavy rounded-2xl shadow-[0_18px_44px_rgba(64,47,75,0.14)] overflow-hidden animate-fade-slide-in z-50">
           <div className="p-2">
             <button
               onClick={exportPNG}
               disabled={!reactFlowInstance}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-primary hover:bg-elevated transition-colors rounded-lg text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-primary hover:bg-white/60 transition-colors rounded-xl text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -254,7 +254,7 @@ export default function ExportMenu() {
             <button
               onClick={exportSVG}
               disabled={!reactFlowInstance}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-primary hover:bg-elevated transition-colors rounded-lg text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-primary hover:bg-white/60 transition-colors rounded-xl text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -264,7 +264,7 @@ export default function ExportMenu() {
             <button
               onClick={exportJSON}
               disabled={!graph}
-              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-primary hover:bg-elevated transition-colors rounded-lg text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-primary hover:bg-white/60 transition-colors rounded-xl text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />

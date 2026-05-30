@@ -39,36 +39,23 @@ export default function LearnPanel() {
   // State 2: Tour available but not started
   if (!tourActive) {
     return (
-      <div className="h-full w-full overflow-auto p-5">
-        <div className="mb-4">
-          <h2 className="text-lg font-heading text-text-primary mb-1">{t.learnPanel.projectTour}</h2>
-          <p className="text-xs text-text-muted">
-            {tourSteps.length} {t.learnPanel.steps} &middot; {t.learnPanel.guidedWalkthrough}
+      <div className="h-full w-full overflow-auto px-4 pb-5">
+        <div className="moya-soft-card p-5">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-accent mb-3">
+            Guided tour
+          </div>
+          <h2 className="text-xl font-heading font-bold text-text-primary tracking-normal mb-2">
+            Walk through the project one idea at a time.
+          </h2>
+          <p className="text-sm text-text-secondary leading-relaxed mb-4">
+            {tourSteps.length} short stops. The map will highlight each part while the panel explains what it means.
           </p>
-        </div>
-
-        <button
-          onClick={startTour}
-          className="w-full mb-4 bg-accent/10 border border-accent/30 text-accent text-sm font-medium py-2.5 px-4 rounded-lg hover:bg-accent/20 transition-colors"
-        >
-          {t.learnPanel.startTour}
-        </button>
-
-        <div className="space-y-2">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-2">
-            {t.learnPanel.steps}
-          </h3>
-          {tourSteps.map((step, i) => (
-            <div
-              key={step.order}
-              className="flex items-start gap-2 text-xs bg-elevated rounded-lg px-3 py-2 border border-border-subtle"
-            >
-              <span className="text-accent font-mono shrink-0 mt-0.5">
-                {i + 1}.
-              </span>
-              <span className="text-text-secondary">{step.title}</span>
-            </div>
-          ))}
+          <button
+            onClick={startTour}
+            className="w-full bg-accent text-white text-sm font-semibold py-3 px-4 rounded-full hover:bg-accent-bright transition-colors"
+          >
+            {t.learnPanel.startTour}
+          </button>
         </div>
       </div>
     );
@@ -86,9 +73,9 @@ export default function LearnPanel() {
   return (
     <div className="h-full w-full flex flex-col overflow-hidden">
       {/* Header with progress counter and exit */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border-subtle shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle shrink-0">
         <div className="flex items-center gap-2">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider">
+          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wide">
             {t.learnPanel.tour}
           </h3>
           <span className="text-xs text-text-muted">
@@ -114,7 +101,7 @@ export default function LearnPanel() {
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {/* Step title */}
-        <h2 className="text-lg font-heading text-text-primary mb-3">{step.title}</h2>
+        <h2 className="text-lg font-heading font-bold text-text-primary tracking-normal mb-3">{step.title}</h2>
 
         {/* Description via ReactMarkdown */}
         <div className="text-sm text-text-secondary leading-relaxed mb-4 tour-markdown">
@@ -157,7 +144,7 @@ export default function LearnPanel() {
         {/* Language lesson */}
         {step.languageLesson && (
           <div className="bg-accent/5 border border-accent/20 rounded p-3 mb-4">
-            <h4 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-1.5">
+            <h4 className="text-[11px] font-semibold text-accent uppercase tracking-wide mb-1.5">
               Language Lesson
             </h4>
             <p className="text-sm text-text-secondary leading-relaxed">
@@ -169,8 +156,8 @@ export default function LearnPanel() {
         {/* Referenced component pills */}
         {step.nodeIds.length > 0 && (
           <div className="mb-4">
-            <h4 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-2">
-              Referenced Components
+            <h4 className="text-[11px] font-semibold text-accent uppercase tracking-wide mb-2">
+              Highlighted parts
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {step.nodeIds.map((nodeId) => {

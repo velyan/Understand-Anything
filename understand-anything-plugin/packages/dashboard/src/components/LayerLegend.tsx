@@ -3,13 +3,13 @@ import { useI18n } from "../contexts/I18nContext";
 
 // Shared layer color palette — used by LayerLegend, LayerClusterNode, PortalNode, and GraphView
 export const LAYER_PALETTE = [
-  { bg: "rgba(74, 124, 155, 0.12)", border: "rgba(74, 124, 155, 0.4)", label: "#4a7c9b" },   // blue (API)
-  { bg: "rgba(90, 158, 111, 0.12)", border: "rgba(90, 158, 111, 0.4)", label: "#5a9e6f" },   // green (Data)
-  { bg: "rgba(139, 111, 176, 0.12)", border: "rgba(139, 111, 176, 0.4)", label: "#8b6fb0" }, // purple (Service)
-  { bg: "rgba(201, 160, 108, 0.12)", border: "rgba(201, 160, 108, 0.4)", label: "#c9a06c" }, // gold (Config)
-  { bg: "rgba(176, 122, 138, 0.12)", border: "rgba(176, 122, 138, 0.4)", label: "#b07a8a" }, // pink (UI)
-  { bg: "rgba(74, 155, 140, 0.12)", border: "rgba(74, 155, 140, 0.4)", label: "#4a9b8c" },   // teal (Middleware)
-  { bg: "rgba(120, 130, 145, 0.12)", border: "rgba(120, 130, 145, 0.4)", label: "#788291" }, // slate (Test)
+  { bg: "rgba(95, 148, 199, 0.12)", border: "rgba(95, 148, 199, 0.4)", label: "#5f94c7" },   // blue (API)
+  { bg: "rgba(95, 150, 127, 0.12)", border: "rgba(95, 150, 127, 0.4)", label: "#5f967f" },   // green (Data)
+  { bg: "rgba(139, 120, 191, 0.12)", border: "rgba(139, 120, 191, 0.4)", label: "#8b78bf" }, // iris (Service)
+  { bg: "rgba(192, 132, 100, 0.12)", border: "rgba(192, 132, 100, 0.4)", label: "#c08464" }, // clay (Config)
+  { bg: "rgba(198, 111, 146, 0.12)", border: "rgba(198, 111, 146, 0.4)", label: "#c66f92" }, // bloom (UI)
+  { bg: "rgba(76, 170, 165, 0.12)", border: "rgba(76, 170, 165, 0.4)", label: "#4caaa5" },   // teal (Middleware)
+  { bg: "rgba(127, 116, 132, 0.12)", border: "rgba(127, 116, 132, 0.4)", label: "#7f7484" }, // slate (Test)
 ];
 
 export function getLayerColor(index: number) {
