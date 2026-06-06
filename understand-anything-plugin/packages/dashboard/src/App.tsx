@@ -18,6 +18,7 @@ import type { KeyboardShortcut } from "./hooks/useKeyboardShortcuts";
 import { ThemeProvider } from "./themes/index.ts";
 import type { ThemeConfig } from "./themes/index.ts";
 import { I18nProvider, useI18n } from "./contexts/I18nContext.tsx";
+import { moyaDataUrl, readMoyaUnderstandConfig } from "./utils/moyaEmbed";
 
 // Lazy-load heavy / optional components so they ship in separate chunks.
 const CodeViewer = lazy(() => import("./components/CodeViewer"));
@@ -134,6 +135,8 @@ function shouldShowOnboarding(): boolean {
 
 /** Resolve data file URL — in demo mode, use env var URLs; otherwise use local paths with token. */
 function dataUrl(fileName: string, token: string | null): string {
+  const embeddedUrl = moyaDataUrl(fileName);
+  if (embeddedUrl) return embeddedUrl;
   if (DEMO_MODE) {
     const envMap: Record<string, string | undefined> = {
       "knowledge-graph.json": import.meta.env.VITE_GRAPH_URL,
@@ -156,6 +159,7 @@ function dataUrl(fileName: string, token: string | null): string {
  * If found in the URL, persist to sessionStorage and strip the param from the address bar.
  */
 function resolveInitialToken(): string | null {
+  if (readMoyaUnderstandConfig()) return "__moya__";
   if (DEMO_MODE) return "__demo__";
   const params = new URLSearchParams(window.location.search);
   const urlToken = params.get("token");
@@ -180,9 +184,9 @@ function App() {
     setAccessToken(token);
   }, []);
 
-  // In demo mode, skip token gate entirely
-  if (DEMO_MODE) {
-    return <Dashboard accessToken="__demo__" />;
+  // In demo or Moya embedded mode, skip the dev-server token gate entirely.
+  if (DEMO_MODE || readMoyaUnderstandConfig()) {
+    return <Dashboard accessToken={DEMO_MODE ? "__demo__" : "__moya__"} />;
   }
 
   // Show the token gate when no token is available
