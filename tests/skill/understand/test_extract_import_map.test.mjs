@@ -1597,3 +1597,55 @@ describe('extract-import-map.mjs — tree-sitter init graceful failure', () => {
     expect(result.output.stats.totalEdges).toBe(0);
   });
 });
+
+describe('extract-import-map.mjs — deterministic stderr ordering across loaders', () => {
+  let projectRoot;
+
+  afterEach(() => {
+    if (projectRoot) {
+      rmSync(projectRoot, { recursive: true, force: true });
+      projectRoot = null;
+    }
+  });
+
+  // Regression for the parallel-loader stderr-order bug surfaced in
+  // PR #346 review: tsconfig / go.mod / composer.json loaders now run
+  // concurrently, but warnings must still emit in the pre-PR canonical
+  // order (tsconfig → go → php). If the loaders streamed warnings
+  // mid-flight, I/O timing could reorder them — the assertions below
+  // catch that regression.
+  it('emits warnings in canonical order (tsconfig, go, php) regardless of I/O timing', () => {
+    projectRoot = setupTree({
+      'tsconfig.json': '{ "compilerOptions": { "baseUrl": ".", ', // unterminated
+      'composer.json': '{ "autoload": { "psr-4": { "App\\\\": "src/" }, ', // unterminated
+      'src/index.ts': `import { foo } from './foo';\n`,
+      'src/foo.ts': `export const foo = 1;\n`,
+      'src/Http/Controller.php':
+        `<?php\nnamespace App\\Http;\n\nuse App\\Models\\User;\n\nclass Controller { }\n`,
+      'src/Models/User.php':
+        `<?php\nnamespace App\\Models;\nclass User { }\n`,
+    });
+
+    const result = runScript(projectRoot, {
+      projectRoot,
+      files: [
+        { path: 'tsconfig.json', language: 'json', fileCategory: 'config' },
+        { path: 'composer.json', language: 'json', fileCategory: 'config' },
+        { path: 'src/index.ts', language: 'typescript', fileCategory: 'code' },
+        { path: 'src/foo.ts', language: 'typescript', fileCategory: 'code' },
+        { path: 'src/Http/Controller.php', language: 'php', fileCategory: 'code' },
+        { path: 'src/Models/User.php', language: 'php', fileCategory: 'code' },
+      ],
+    });
+
+    expect(result.status).toBe(0);
+    const tsLineIdx = result.stderr.indexOf('tsconfig.json at');
+    const composerLineIdx = result.stderr.indexOf('composer.json at');
+    expect(tsLineIdx).toBeGreaterThanOrEqual(0);
+    expect(composerLineIdx).toBeGreaterThanOrEqual(0);
+    // Canonical order: tsconfig warnings precede composer warnings.
+    // Pre-PR-346 this fell out of sequential loader passes; post-fix it
+    // falls out of buffering + ordered drain in buildResolutionContext.
+    expect(tsLineIdx).toBeLessThan(composerLineIdx);
+  });
+});
