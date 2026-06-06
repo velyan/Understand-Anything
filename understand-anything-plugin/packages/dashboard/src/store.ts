@@ -307,7 +307,7 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
   currentTourStep: 0,
   tourHighlightedNodeIds: [],
 
-  persona: "junior",
+  persona: "non-technical",
 
   diffMode: false,
   changedNodeIds: new Set<string>(),
@@ -781,4 +781,3 @@ export const useDashboardStore = create<DashboardStore>()((set, get) => ({
     }),
   clearLayoutIssues: () => set({ layoutIssues: [] }),
 }));
-

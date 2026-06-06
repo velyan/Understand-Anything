@@ -22,10 +22,10 @@ function DomainClusterNode({ data }: NodeProps<DomainClusterFlowNode>) {
 
   return (
     <div
-      className={`rounded-xl border-2 px-5 py-4 min-w-[280px] max-w-[360px] cursor-pointer transition-all ${
+      className={`rounded-2xl border px-5 py-4 min-w-[280px] max-w-[360px] cursor-pointer transition-all shadow-[0_14px_32px_rgba(64,47,75,0.09)] ${
         isSelected
-          ? "border-accent bg-accent/10 shadow-lg shadow-accent/10"
-          : "border-accent/40 bg-surface hover:border-accent/70"
+          ? "border-accent bg-accent/10"
+          : "border-accent/30 bg-white/75 hover:border-accent/60"
       }`}
       onClick={() => selectNode(data.domainId)}
       onDoubleClick={() => navigateToDomain(data.domainId)}
@@ -33,7 +33,7 @@ function DomainClusterNode({ data }: NodeProps<DomainClusterFlowNode>) {
       <Handle type="target" position={Position.Left} className="!bg-accent/60 !w-2 !h-2" />
       <Handle type="source" position={Position.Right} className="!bg-accent/60 !w-2 !h-2" />
 
-      <div className="font-heading text-sm text-accent font-semibold mb-1 truncate">
+      <div className="font-heading text-sm text-accent font-bold mb-1 truncate tracking-normal">
         {data.label}
       </div>
       <div className="text-[11px] text-text-secondary line-clamp-2 mb-2">
@@ -42,10 +42,10 @@ function DomainClusterNode({ data }: NodeProps<DomainClusterFlowNode>) {
 
       {data.entities && data.entities.length > 0 && (
         <div className="mb-2">
-          <div className="text-[9px] uppercase tracking-wider text-text-muted mb-1">Entities</div>
+          <div className="text-[9px] uppercase tracking-wide text-text-muted mb-1">Entities</div>
           <div className="flex flex-wrap gap-1">
             {data.entities.slice(0, 5).map((e) => (
-              <span key={e} className="text-[10px] px-1.5 py-0.5 rounded bg-elevated text-text-secondary">
+              <span key={e} className="text-[10px] px-2 py-0.5 rounded-full bg-white/60 border border-border-subtle text-text-secondary">
                 {e}
               </span>
             ))}

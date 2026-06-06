@@ -108,10 +108,10 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-root/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2f2837]/35 backdrop-blur-sm p-4">
       <div
         ref={modalRef}
-        className="glass-heavy rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden animate-fade-slide-in"
+        className="glass-heavy rounded-[24px] shadow-[0_26px_70px_rgba(47,40,55,0.22)] w-full max-w-2xl max-h-[80vh] overflow-hidden animate-fade-slide-in"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle">
@@ -124,7 +124,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
                 d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
               />
             </svg>
-            <h2 className="font-heading text-xl text-text-primary">Dependency Path Finder</h2>
+            <h2 className="font-heading text-xl font-bold text-text-primary tracking-normal">Dependency Path Finder</h2>
           </div>
           <button
             onClick={onClose}
@@ -144,7 +144,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
 
           {/* From Node */}
           <div>
-            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
               From Node
             </label>
             <select
@@ -153,7 +153,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
                 setFromNodeId(e.target.value);
                 setPath(null);
               }}
-              className="w-full bg-elevated text-text-primary text-sm rounded-lg px-3 py-2 border border-border-subtle focus:outline-none focus:border-gold/50"
+              className="w-full bg-white/70 text-text-primary text-sm rounded-2xl px-3 py-2 border border-border-subtle focus:outline-none focus:border-gold/50"
             >
               <option value="">Select a node...</option>
               {nodes.map((node) => (
@@ -166,7 +166,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
 
           {/* To Node */}
           <div>
-            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
               To Node
             </label>
             <select
@@ -175,7 +175,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
                 setToNodeId(e.target.value);
                 setPath(null);
               }}
-              className="w-full bg-elevated text-text-primary text-sm rounded-lg px-3 py-2 border border-border-subtle focus:outline-none focus:border-gold/50"
+              className="w-full bg-white/70 text-text-primary text-sm rounded-2xl px-3 py-2 border border-border-subtle focus:outline-none focus:border-gold/50"
             >
               <option value="">Select a node...</option>
               {nodes.map((node) => (
@@ -190,7 +190,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
           <button
             onClick={findPath}
             disabled={!fromNodeId || !toNodeId || fromNodeId === toNodeId || searching}
-            className="w-full bg-gold/10 border border-gold/30 text-gold text-sm font-medium py-2.5 px-4 rounded-lg hover:bg-gold/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gold/10 border border-gold/30 text-gold text-sm font-semibold py-3 px-4 rounded-full hover:bg-gold/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {searching ? "Searching..." : "Find Path"}
           </button>
@@ -199,9 +199,9 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
           {path !== null && (
             <div className="mt-4">
               {path.length === 0 ? (
-                <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4 text-center">
+                <div className="bg-red-500/10 border border-red-500/25 rounded-2xl p-4 text-center">
                   <svg
-                    className="w-8 h-8 text-red-400 mx-auto mb-2"
+                    className="w-8 h-8 text-red-600 mx-auto mb-2"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -213,13 +213,13 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-sm text-red-200">No path found between these nodes.</p>
+                  <p className="text-sm text-red-700">No path found between these nodes.</p>
                 </div>
               ) : (
-                <div className="bg-elevated border border-border-subtle rounded-lg p-4">
+                <div className="bg-white/60 border border-border-subtle rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <svg
-                      className="w-4 h-4 text-green-400"
+                      className="w-4 h-4 text-node-function"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -246,7 +246,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
                         <div key={nodeId}>
                           <button
                             onClick={() => handleNodeClick(nodeId)}
-                            className="w-full flex items-center gap-3 p-2 bg-surface rounded-lg hover:bg-elevated transition-colors text-left"
+                            className="w-full flex items-center gap-3 p-2 bg-white/60 rounded-2xl hover:bg-white/80 transition-colors text-left"
                           >
                             <div className="w-6 h-6 shrink-0 rounded-full bg-gold/20 flex items-center justify-center text-xs font-bold text-gold">
                               {idx + 1}
@@ -300,7 +300,7 @@ export default function PathFinderModal({ isOpen, onClose }: PathFinderModalProp
         <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-border-subtle">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors rounded-full"
           >
             Close
           </button>

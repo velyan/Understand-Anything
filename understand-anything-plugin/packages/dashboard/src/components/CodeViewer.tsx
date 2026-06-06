@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Highlight, themes } from "prism-react-renderer";
 import { useDashboardStore } from "../store";
 import { useI18n } from "../contexts/I18nContext";
+import { moyaFileContentUrl } from "../utils/moyaEmbed";
 
 interface CodeViewerProps {
   accessToken: string;
@@ -24,7 +25,11 @@ type SourceState =
   | { status: "error"; source: null; error: string };
 
 function fileContentUrl(filePath: string, token: string): string {
-  const params = new URLSearchParams({ token, path: filePath });
+  const embeddedUrl = moyaFileContentUrl(filePath);
+  if (embeddedUrl) return embeddedUrl;
+  const params = token === "__moya__"
+    ? new URLSearchParams({ path: filePath })
+    : new URLSearchParams({ token, path: filePath });
   return `/file-content.json?${params.toString()}`;
 }
 

@@ -79,10 +79,10 @@ export default function FilterPanel() {
     <div ref={containerRef} className="relative">
       <button
         onClick={toggleFilterPanel}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm border transition-colors ${
           isActive
-            ? "bg-gold/20 text-gold hover:bg-gold/30"
-            : "bg-elevated text-text-secondary hover:text-text-primary"
+            ? "bg-gold/20 text-gold border-gold/35 hover:bg-gold/30"
+            : "bg-white/60 border-border-subtle text-text-secondary hover:text-text-primary hover:border-accent/25"
         }`}
         title="Filter graph (F)"
       >
@@ -103,18 +103,18 @@ export default function FilterPanel() {
       </button>
 
       {filterPanelOpen && (
-        <div className="absolute right-0 top-full mt-2 w-72 glass rounded-lg shadow-xl overflow-hidden animate-fade-slide-in z-50">
+        <div className="absolute right-0 top-full mt-2 w-72 glass-heavy rounded-2xl shadow-[0_18px_44px_rgba(64,47,75,0.14)] overflow-hidden animate-fade-slide-in z-50">
           <div className="p-4 space-y-4">
             {/* Node Types */}
             <div>
-              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
                 {t.filterPanel.nodeTypes}
               </h3>
               <div className="space-y-1.5">
                 {allNodeTypes.map((type) => (
                   <label
                     key={type}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-elevated/50 rounded px-2 py-1 transition-colors"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-white/60 rounded-xl px-2 py-1 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -130,14 +130,14 @@ export default function FilterPanel() {
 
             {/* Complexity */}
             <div>
-              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
                 {t.filterPanel.complexity}
               </h3>
               <div className="space-y-1.5">
                 {allComplexities.map((complexity) => (
                   <label
                     key={complexity}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-elevated/50 rounded px-2 py-1 transition-colors"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-white/60 rounded-xl px-2 py-1 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -154,14 +154,14 @@ export default function FilterPanel() {
             {/* Layers */}
             {layers.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
                   {t.filterPanel.layers}
                 </h3>
                 <div className="space-y-1.5">
                   {layers.map((layer) => (
                     <label
                       key={layer.id}
-                      className="flex items-center gap-2 cursor-pointer hover:bg-elevated/50 rounded px-2 py-1 transition-colors"
+                      className="flex items-center gap-2 cursor-pointer hover:bg-white/60 rounded-xl px-2 py-1 transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -179,14 +179,14 @@ export default function FilterPanel() {
 
             {/* Edge Categories */}
             <div>
-              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">
                 {t.filterPanel.edgeCategories}
               </h3>
               <div className="space-y-1.5">
                 {allEdgeCategories.map((category) => (
                   <label
                     key={category}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-elevated/50 rounded px-2 py-1 transition-colors"
+                    className="flex items-center gap-2 cursor-pointer hover:bg-white/60 rounded-xl px-2 py-1 transition-colors"
                   >
                     <input
                       type="checkbox"
@@ -206,7 +206,7 @@ export default function FilterPanel() {
             {isActive && (
               <button
                 onClick={resetFilters}
-                className="w-full px-3 py-1.5 text-sm bg-elevated hover:bg-gold/20 text-text-secondary hover:text-gold rounded-lg transition-colors"
+                className="w-full px-3 py-2 text-sm bg-white/60 hover:bg-gold/20 text-text-secondary hover:text-gold rounded-full border border-border-subtle transition-colors"
               >
                 {t.common.resetAll}
               </button>

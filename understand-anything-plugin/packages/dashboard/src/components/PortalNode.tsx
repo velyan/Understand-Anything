@@ -6,7 +6,6 @@ import { getLayerColor } from "./LayerLegend";
 export interface PortalNodeData extends Record<string, unknown> {
   targetLayerId: string;
   targetLayerName: string;
-  connectionCount: number;
   layerColorIndex: number;
   onNavigate: (layerId: string) => void;
 }
@@ -20,18 +19,18 @@ function PortalNode({
 
   return (
     <div
-      className="relative rounded-lg bg-elevated/60 overflow-hidden cursor-pointer transition-all duration-200 hover:bg-elevated/80"
+      className="relative rounded-2xl bg-white/60 overflow-hidden cursor-pointer transition-all duration-200 hover:bg-white/80"
       style={{
         width: 220,
         border: `2px dashed ${color.border}`,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        boxShadow: "0 12px 28px rgba(64, 47, 75, 0.08)",
       }}
       onClick={() => data.onNavigate(data.targetLayerId)}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="!bg-text-muted !w-2 !h-2"
+        className="!bg-accent-dim !border-white !w-2.5 !h-2.5"
       />
 
       <div className="px-3 py-2.5">
@@ -47,15 +46,12 @@ function PortalNode({
           </div>
           <span className="text-text-muted ml-2 shrink-0">→</span>
         </div>
-        <div className="text-[10px] text-text-muted mt-1 pl-4">
-          {data.connectionCount} connection{data.connectionCount !== 1 ? "s" : ""}
-        </div>
       </div>
 
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-text-muted !w-2 !h-2"
+        className="!bg-accent-dim !border-white !w-2.5 !h-2.5"
       />
     </div>
   );

@@ -1,5 +1,14 @@
 import type { AccentSwatch, ThemePreset } from "./types.ts";
 
+const MOYA_ACCENT_SWATCHES: AccentSwatch[] = [
+  { id: "bloom", name: "Bloom", accent: "#c66f92", accentDim: "#a95d7c", accentBright: "#df8faf" },
+  { id: "sage", name: "Sage", accent: "#5f967f", accentDim: "#4f806c", accentBright: "#7eb49d" },
+  { id: "iris", name: "Iris", accent: "#8b78bf", accentDim: "#7162a0", accentBright: "#a796d8" },
+  { id: "sky", name: "Sky", accent: "#5f94c7", accentDim: "#4d7cab", accentBright: "#83b1dd" },
+  { id: "clay", name: "Clay", accent: "#c08464", accentDim: "#a66f54", accentBright: "#d69f82" },
+  { id: "moss", name: "Moss", accent: "#78905d", accentDim: "#63794d", accentBright: "#96ac77" },
+];
+
 const DARK_ACCENT_SWATCHES: AccentSwatch[] = [
   { id: "gold", name: "Gold", accent: "#d4a574", accentDim: "#c9a96e", accentBright: "#e8c49a" },
   { id: "ocean", name: "Ocean", accent: "#5ba4cf", accentDim: "#4e93ba", accentBright: "#7abce0" },
@@ -23,6 +32,40 @@ const LIGHT_ACCENT_SWATCHES: AccentSwatch[] = [
 ];
 
 export const PRESETS: ThemePreset[] = [
+  {
+    id: "moya-soft",
+    name: "Moya Soft",
+    isDark: false,
+    defaultAccentId: "bloom",
+    accentSwatches: MOYA_ACCENT_SWATCHES,
+    colors: {
+      root: "#f8f3f7",
+      surface: "#fffafc",
+      elevated: "#ffffff",
+      panel: "#f0e8f0",
+      "text-primary": "#2f2837",
+      "text-secondary": "#6f6275",
+      "text-muted": "#9c8d9e",
+      "node-file": "#5f94c7",
+      "node-function": "#5f967f",
+      "node-class": "#8b78bf",
+      "node-module": "#c08464",
+      "node-concept": "#c66f92",
+      "node-config": "#4caaa5",
+      "node-document": "#6c9ccf",
+      "node-service": "#9275c7",
+      "node-table": "#6ea981",
+      "node-endpoint": "#cb895f",
+      "node-pipeline": "#d57491",
+      "node-schema": "#bda556",
+      "node-resource": "#7f91d6",
+      "node-article": "#c66f92",
+      "node-entity": "#5f94c7",
+      "node-topic": "#8b78bf",
+      "node-claim": "#5f967f",
+      "node-source": "#7f7484",
+    },
+  },
   {
     id: "dark-gold",
     name: "Dark Gold",

@@ -55,34 +55,34 @@ export default function NodeTooltip({
         top: position.y + 16,
       }}
     >
-      <div className="glass-heavy rounded-lg shadow-2xl p-3 max-w-xs animate-fade-slide-in">
+      <div className="glass-heavy rounded-2xl shadow-[0_18px_44px_rgba(64,47,75,0.14)] p-3 max-w-xs animate-fade-slide-in">
         {/* Header */}
         <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border-subtle">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-gold">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-gold">
             {data.nodeType}
           </span>
           {data.complexity && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-elevated text-text-muted font-mono">
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/60 border border-border-subtle text-text-muted font-mono">
               {data.complexity}
             </span>
           )}
         </div>
 
         {/* Name */}
-        <h4 className="text-sm font-heading text-text-primary mb-2 break-words">
+        <h4 className="text-sm font-heading font-bold text-text-primary mb-2 break-words tracking-normal">
           {data.label}
         </h4>
 
         {/* Connections */}
         <div className="flex items-center gap-4 mb-2 text-xs">
           <div className="flex items-center gap-1">
-            <svg className="w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-3 h-3 text-node-file" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" />
             </svg>
             <span className="text-text-secondary">{incomingCount} in</span>
           </div>
           <div className="flex items-center gap-1">
-            <svg className="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-3 h-3 text-node-function" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clipRule="evenodd" transform="rotate(180 10 10)" />
             </svg>
             <span className="text-text-secondary">{outgoingCount} out</span>

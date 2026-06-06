@@ -39,7 +39,6 @@ export default function MobileLayout({
   const graph = useDashboardStore((s) => s.graph);
   const selectedNodeId = useDashboardStore((s) => s.selectedNodeId);
   const tourActive = useDashboardStore((s) => s.tourActive);
-  const persona = useDashboardStore((s) => s.persona);
   const viewMode = useDashboardStore((s) => s.viewMode);
   const domainGraph = useDashboardStore((s) => s.domainGraph);
   const codeViewerOpen = useDashboardStore((s) => s.codeViewerOpen);
@@ -63,7 +62,7 @@ export default function MobileLayout({
     if (codeViewerOpen) setSearchOpen(false);
   }, [codeViewerOpen]);
 
-  const isLearnMode = tourActive || persona === "junior";
+  const isLearnMode = tourActive;
   const infoContent = (
     <>
       {selectedNodeId && <NodeInfo />}
@@ -77,7 +76,7 @@ export default function MobileLayout({
   );
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-root text-text-primary noise-overlay">
+    <div className="min-h-[100dvh] h-[100dvh] w-screen flex flex-col bg-root text-text-primary noise-overlay">
       {/* Top bar */}
       <header className="flex items-center gap-2 px-3 h-12 shrink-0 bg-surface border-b border-border-subtle">
         <button

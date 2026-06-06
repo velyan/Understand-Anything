@@ -1,38 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDashboardStore } from "../store";
 import { useI18n } from "../contexts/I18nContext";
-import type { NodeType, EdgeType, KnowledgeGraph, GraphNode } from "@understand-anything/core/types";
-
-// Badge color classes keyed by NodeType — must be kept in sync with core NodeType union.
-const typeBadgeColors: Record<NodeType, string> = {
-  file: "text-node-file border border-node-file/30 bg-node-file/10",
-  function: "text-node-function border border-node-function/30 bg-node-function/10",
-  class: "text-node-class border border-node-class/30 bg-node-class/10",
-  module: "text-node-module border border-node-module/30 bg-node-module/10",
-  concept: "text-node-concept border border-node-concept/30 bg-node-concept/10",
-  config: "text-node-config border border-node-config/30 bg-node-config/10",
-  document: "text-node-document border border-node-document/30 bg-node-document/10",
-  service: "text-node-service border border-node-service/30 bg-node-service/10",
-  table: "text-node-table border border-node-table/30 bg-node-table/10",
-  endpoint: "text-node-endpoint border border-node-endpoint/30 bg-node-endpoint/10",
-  pipeline: "text-node-pipeline border border-node-pipeline/30 bg-node-pipeline/10",
-  schema: "text-node-schema border border-node-schema/30 bg-node-schema/10",
-  resource: "text-node-resource border border-node-resource/30 bg-node-resource/10",
-  domain: "text-node-concept border border-node-concept/30 bg-node-concept/10",
-  flow: "text-node-pipeline border border-node-pipeline/30 bg-node-pipeline/10",
-  step: "text-node-function border border-node-function/30 bg-node-function/10",
-  article: "text-node-article border border-node-article/30 bg-node-article/10",
-  entity: "text-node-entity border border-node-entity/30 bg-node-entity/10",
-  topic: "text-node-topic border border-node-topic/30 bg-node-topic/10",
-  claim: "text-node-claim border border-node-claim/30 bg-node-claim/10",
-  source: "text-node-source border border-node-source/30 bg-node-source/10",
-};
-
-const complexityBadgeColors: Record<string, string> = {
-  simple: "text-node-function border border-node-function/30 bg-node-function/10",
-  moderate: "text-accent-dim border border-accent-dim/30 bg-accent-dim/10",
-  complex: "text-[#c97070] border border-[#c97070]/30 bg-[#c97070]/10",
-};
+import type { EdgeType, KnowledgeGraph, GraphNode } from "@understand-anything/core/types";
 
 function getDirectionalLabel(edgeType: string, isSource: boolean, t: ReturnType<typeof useI18n>["t"]): string {
   const labels = t.edgeLabels[edgeType as EdgeType];
@@ -262,18 +231,23 @@ export default function NodeInfo() {
   const nodeHistory = useDashboardStore((s) => s.nodeHistory);
   const goBackNode = useDashboardStore((s) => s.goBackNode);
   const [languageExpanded, setLanguageExpanded] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const { t } = useI18n();
 
   const navigateToNode = useDashboardStore((s) => s.navigateToNode);
   const navigateToHistoryIndex = useDashboardStore((s) => s.navigateToHistoryIndex);
-  const setFocusNode = useDashboardStore((s) => s.setFocusNode);
+  const selectNode = useDashboardStore((s) => s.selectNode);
   const openCodeViewer = useDashboardStore((s) => s.openCodeViewer);
-  const focusNodeId = useDashboardStore((s) => s.focusNodeId);
   const viewMode = useDashboardStore((s) => s.viewMode);
   const domainGraph = useDashboardStore((s) => s.domainGraph);
 
   const activeGraph = viewMode === "domain" && domainGraph ? domainGraph : graph;
   const node = activeGraph?.nodes.find((n) => n.id === selectedNodeId) ?? null;
+
+  useEffect(() => {
+    setDetailsOpen(false);
+    setLanguageExpanded(true);
+  }, [selectedNodeId]);
 
   // Resolve history node names for the breadcrumb trail
   const historyNodes = nodeHistory.map((id) => {
@@ -283,7 +257,7 @@ export default function NodeInfo() {
 
   if (!node) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-surface">
+      <div className="h-full w-full flex items-center justify-center">
         <p className="text-text-muted text-sm">{t.common.selectNode}</p>
       </div>
     );
@@ -306,21 +280,14 @@ export default function NodeInfo() {
   const childNodes = childEdges
     .map((e) => activeGraph?.nodes.find((n) => n.id === e.target))
     .filter((n): n is GraphNode => n !== undefined);
-
-  const knownType = node.type as NodeType;
-  const typeBadge = typeBadgeColors[knownType] ?? typeBadgeColors.file;
-  const complexityBadge =
-    complexityBadgeColors[node.complexity] ?? complexityBadgeColors.simple;
-
-  if (import.meta.env.DEV && !(knownType in typeBadgeColors)) {
-    console.warn(`[NodeInfo] Unknown node type "${node.type}" — using "file" badge colors`);
-  }
+  const visibleChildNodes = childNodes.slice(0, 3);
+  const visibleConnections = otherConnections.slice(0, 3);
 
   return (
-    <div className="h-full w-full overflow-auto p-5 animate-fade-slide-in">
+    <div className="h-full w-full overflow-auto px-4 pb-5 animate-fade-slide-in">
       {/* Navigation history trail */}
       {historyNodes.length > 0 && (
-        <div className="mb-3 flex items-center gap-1 flex-wrap">
+        <div className="mb-3 flex items-center gap-1 flex-wrap text-[10px]">
           <button
             onClick={goBackNode}
             className="text-[10px] font-semibold text-gold hover:text-gold-bright transition-colors flex items-center gap-1"
@@ -353,186 +320,171 @@ export default function NodeInfo() {
         </div>
       )}
 
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${typeBadge}`}
-        >
-          {node.type}
-        </span>
-        <span
-          className={`text-[10px] font-semibold px-2 py-0.5 rounded ${complexityBadge}`}
-        >
-          {node.complexity}
-        </span>
-      </div>
-
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-heading text-text-primary">{node.name}</h2>
-        <button
-          onClick={() => setFocusNode(focusNodeId === node.id ? null : node.id)}
-          className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded transition-colors ${
-            focusNodeId === node.id
-              ? "bg-gold/20 text-gold border border-gold/40"
-              : "text-text-muted border border-border-subtle hover:text-gold hover:border-gold/30"
-          }`}
-        >
-          {focusNodeId === node.id ? t.common.unfocus : t.common.focus}
-        </button>
-      </div>
-
-      <p className="text-sm text-text-secondary mb-4 leading-relaxed">
-        {node.summary}
-      </p>
-
-      {node.filePath && (
-        <div className="text-xs text-text-secondary mb-4 rounded-lg border border-border-subtle bg-elevated/60 p-3">
-          <div className="flex items-start justify-between gap-3">
+      <div className="moya-liquid-card p-1.5 mb-3">
+        <div className="moya-liquid-core p-4">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div className="min-w-0">
-              <div className="font-medium text-text-muted mb-1">{t.common.file}</div>
-              <div className="font-mono truncate" title={node.filePath}>
-                {node.filePath}
-                {node.lineRange && (
-                  <span className="ml-2 text-text-muted">
-                    L{node.lineRange[0]}-{node.lineRange[1]}
-                  </span>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-accent mb-2">
+                Selected part
+              </div>
+              <h2 className="text-xl font-heading font-bold text-text-primary tracking-normal leading-tight">{node.name}</h2>
+            </div>
+            <button
+              onClick={() => selectNode(null)}
+              className="text-[10px] font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full transition-colors shrink-0 text-text-muted border border-border-subtle bg-white/60 hover:text-gold hover:border-gold/30"
+            >
+              Overview
+            </button>
+          </div>
+
+          <p className="text-sm text-text-secondary leading-relaxed">
+            {node.summary}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((value) => !value)}
+        className="w-full group rounded-full bg-white/58 border border-white/70 text-text-secondary hover:text-text-primary px-4 py-3 text-sm font-semibold active:scale-[0.99] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center justify-between shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_12px_26px_rgba(64,47,75,0.06)] mb-4"
+      >
+        <span>{detailsOpen ? "Hide details" : "Show details"}</span>
+        <span className={`h-7 w-7 rounded-full bg-accent/10 text-accent flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${detailsOpen ? "rotate-180" : "group-hover:translate-y-0.5"}`}>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      </button>
+
+      {detailsOpen && (
+        <>
+          {node.filePath && (
+            <div className="text-xs text-text-secondary mb-4 rounded-2xl border border-border-subtle bg-white/60 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-medium text-text-muted mb-1">Where it lives</div>
+                  <div className="font-mono truncate" title={node.filePath}>
+                    {node.filePath}
+                    {node.lineRange && (
+                      <span className="ml-2 text-text-muted">
+                        L{node.lineRange[0]}-{node.lineRange[1]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openCodeViewer(node.id)}
+                  className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-3 py-1.5 rounded-full border border-accent/20 text-accent hover:text-accent-bright hover:border-accent/45 transition-colors"
+                >
+                  Code
+                </button>
+              </div>
+            </div>
+          )}
+
+          {node.languageNotes && (
+            <div className="mb-4">
+              <button
+                onClick={() => setLanguageExpanded(!languageExpanded)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-accent uppercase tracking-wide mb-2 hover:text-accent-bright transition-colors"
+              >
+                <svg
+                  className={`w-3 h-3 transition-transform ${languageExpanded ? "rotate-90" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                {t.nodeInfo.languageConcepts}
+              </button>
+              {languageExpanded && (
+                <div className="bg-accent/5 border border-accent/20 rounded-2xl p-3">
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    {node.languageNotes}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeGraph && node && (node.type === "article" || node.type === "entity" || node.type === "topic" || node.type === "claim" || node.type === "source") && (
+            <KnowledgeNodeDetails node={node} graph={activeGraph} />
+          )}
+
+          {activeGraph && node && (node.type === "domain" || node.type === "flow" || node.type === "step") && (
+            <DomainNodeDetails node={node} graph={activeGraph} />
+          )}
+
+          {visibleChildNodes.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wide mb-2">
+                Parts inside this file
+              </h3>
+              <div className="space-y-1">
+                {visibleChildNodes.map((child) => {
+                  if (!child) return null;
+                  return (
+                    <div
+                      key={child.id}
+                      className="text-xs bg-white/60 rounded-2xl px-3 py-2 border border-border-subtle cursor-pointer hover:border-gold/40 hover:bg-gold/10 transition-colors"
+                      onClick={() => navigateToNode(child.id)}
+                    >
+                      <div className="text-text-primary truncate">{child.name}</div>
+                      {child.summary && (
+                        <p className="text-[11px] text-text-muted mt-1 line-clamp-1">
+                          {child.summary}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+                {childNodes.length > visibleChildNodes.length && (
+                  <div className="text-[11px] text-text-muted px-3 py-1">
+                    +{childNodes.length - visibleChildNodes.length} more inside
+                  </div>
                 )}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => openCodeViewer(node.id)}
-              className="shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border border-accent/30 text-accent hover:text-accent-bright hover:border-accent/60 transition-colors"
-            >
-              {t.common.openCode}
-            </button>
-          </div>
-        </div>
-      )}
+          )}
 
-      {node.languageNotes && (
-        <div className="mb-4">
-          <button
-            onClick={() => setLanguageExpanded(!languageExpanded)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-accent uppercase tracking-wider mb-2 hover:text-accent-bright transition-colors"
-          >
-            <svg
-              className={`w-3 h-3 transition-transform ${languageExpanded ? "rotate-90" : ""}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            {t.nodeInfo.languageConcepts}
-          </button>
-          {languageExpanded && (
-            <div className="bg-accent/5 border border-accent/20 rounded-lg p-3">
-              <p className="text-sm text-text-secondary leading-relaxed">
-                {node.languageNotes}
-              </p>
+          {visibleConnections.length > 0 && (
+            <div>
+              <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wide mb-2">
+                Related parts
+              </h3>
+              <div className="space-y-1.5">
+                {visibleConnections.map((edge, i) => {
+                  const isSource = edge.source === node.id;
+                  const otherId = isSource ? edge.target : edge.source;
+                  const otherNode = activeGraph?.nodes.find((n) => n.id === otherId);
+                  const dirLabel = getDirectionalLabel(edge.type, isSource, t);
+
+                  return (
+                    <div
+                      key={i}
+                      className="text-xs bg-white/60 rounded-2xl px-3 py-2 border border-border-subtle flex items-center gap-2 cursor-pointer hover:border-gold/40 hover:bg-gold/10 transition-colors"
+                      onClick={() => {
+                        navigateToNode(otherId);
+                      }}
+                    >
+                      <span className="text-text-muted min-w-[72px] truncate">{dirLabel}</span>
+                      <span className="text-text-primary truncate">
+                        {otherNode?.name ?? otherId}
+                      </span>
+                    </div>
+                  );
+                })}
+                {otherConnections.length > visibleConnections.length && (
+                  <div className="text-[11px] text-text-muted px-3 py-1">
+                    +{otherConnections.length - visibleConnections.length} more related parts
+                  </div>
+                )}
+              </div>
             </div>
           )}
-        </div>
-      )}
-
-      {node.tags.length > 0 && (
-        <div className="mb-4">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-2">
-            {t.common.tags}
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {node.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-[11px] glass text-text-secondary px-2.5 py-1 rounded-full"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Knowledge-specific details */}
-      {activeGraph && node && (node.type === "article" || node.type === "entity" || node.type === "topic" || node.type === "claim" || node.type === "source") && (
-        <KnowledgeNodeDetails node={node} graph={activeGraph} />
-      )}
-
-      {/* Domain-specific details */}
-      {activeGraph && node && (node.type === "domain" || node.type === "flow" || node.type === "step") && (
-        <DomainNodeDetails node={node} graph={activeGraph} />
-      )}
-
-      {/* Child classes/functions within this file */}
-      {childNodes.length > 0 && (
-        <div className="mb-4">
-          <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-2">
-            {t.nodeInfo.definedInThisFile} ({childNodes.length})
-          </h3>
-          <div className="space-y-1">
-            {childNodes.map((child) => {
-              if (!child) return null;
-              const childTypeBadge = typeBadgeColors[child.type as NodeType] ?? typeBadgeColors.file;
-              const childComplexity = complexityBadgeColors[child.complexity] ?? complexityBadgeColors.simple;
-              return (
-                <div
-                  key={child.id}
-                  className="text-xs bg-elevated rounded-lg px-3 py-2 border border-border-subtle cursor-pointer hover:border-gold/40 hover:bg-gold/5 transition-colors"
-                  onClick={() => navigateToNode(child.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${childTypeBadge}`}>
-                      {child.type}
-                    </span>
-                    <span className="text-text-primary truncate">{child.name}</span>
-                    <span className={`text-[9px] ml-auto ${childComplexity} px-1 py-0.5 rounded`}>
-                      {child.complexity}
-                    </span>
-                  </div>
-                  {child.summary && (
-                    <p className="text-[11px] text-text-muted mt-1 line-clamp-1 pl-1">
-                      {child.summary}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Other connections (excluding "contains" children) */}
-      {otherConnections.length > 0 && (
-        <div>
-          <h3 className="text-[11px] font-semibold text-gold uppercase tracking-wider mb-2">
-            {t.common.connections} ({otherConnections.length})
-          </h3>
-          <div className="space-y-1.5">
-            {otherConnections.map((edge, i) => {
-              const isSource = edge.source === node.id;
-              const otherId = isSource ? edge.target : edge.source;
-              const otherNode = activeGraph?.nodes.find((n) => n.id === otherId);
-              const dirLabel = getDirectionalLabel(edge.type, isSource, t);
-              const arrow = isSource ? "\u2192" : "\u2190";
-
-              return (
-                <div
-                  key={i}
-                  className="text-xs bg-elevated rounded-lg px-3 py-2 border border-border-subtle flex items-center gap-2 cursor-pointer hover:border-gold/40 hover:bg-gold/5 transition-colors"
-                  onClick={() => {
-                    navigateToNode(otherId);
-                  }}
-                >
-                  <span className="text-gold font-mono">{arrow}</span>
-                  <span className="text-text-muted">{dirLabel}</span>
-                  <span className="text-text-primary truncate">
-                    {otherNode?.name ?? otherId}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

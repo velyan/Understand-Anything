@@ -15,12 +15,12 @@ export default function DiffToggle() {
       <button
         onClick={toggleDiffMode}
         disabled={!hasDiff}
-        className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
+        className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors border ${
           diffMode && hasDiff
-            ? "bg-[var(--color-diff-changed-dim)] text-[var(--color-diff-changed)]"
+            ? "bg-[var(--color-diff-changed-dim)] text-[var(--color-diff-changed)] border-[var(--color-diff-changed)]"
             : hasDiff
-              ? "bg-elevated text-text-secondary hover:bg-surface"
-              : "bg-elevated text-text-muted cursor-not-allowed"
+              ? "bg-white/60 text-text-secondary border-border-subtle hover:text-text-primary"
+              : "bg-white/40 text-text-muted border-border-subtle cursor-not-allowed"
         }`}
         title={
           hasDiff

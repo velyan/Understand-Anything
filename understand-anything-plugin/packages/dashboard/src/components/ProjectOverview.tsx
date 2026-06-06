@@ -1,10 +1,15 @@
+import { useMemo, useState } from "react";
 import { useDashboardStore } from "../store";
 import { useI18n } from "../contexts/I18nContext";
 
 export default function ProjectOverview() {
   const graph = useDashboardStore((s) => s.graph);
   const startTour = useDashboardStore((s) => s.startTour);
+  const drillIntoLayer = useDashboardStore((s) => s.drillIntoLayer);
   const { t } = useI18n();
+  const [areasOpen, setAreasOpen] = useState(false);
+
+  const mainAreas = useMemo(() => graph?.layers.slice(0, 5) ?? [], [graph?.layers]);
 
   if (!graph) {
     return (
@@ -14,208 +19,84 @@ export default function ProjectOverview() {
     );
   }
 
-  const { project, nodes, edges, layers } = graph;
   const hasTour = graph.tour.length > 0;
 
-  const typeCounts: Record<string, number> = {};
-  for (const node of nodes) {
-    typeCounts[node.type] = (typeCounts[node.type] ?? 0) + 1;
-  }
-
-  const complexityCounts: Record<string, number> = { simple: 0, moderate: 0, complex: 0 };
-  for (const node of nodes) {
-    if (node.complexity) {
-      complexityCounts[node.complexity] = (complexityCounts[node.complexity] ?? 0) + 1;
-    }
-  }
-
-  const nodeConnections = new Map<string, number>();
-  for (const edge of edges) {
-    nodeConnections.set(edge.source, (nodeConnections.get(edge.source) ?? 0) + 1);
-    nodeConnections.set(edge.target, (nodeConnections.get(edge.target) ?? 0) + 1);
-  }
-  const topNodes = Array.from(nodeConnections.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([nodeId, count]) => {
-      const node = nodes.find((n) => n.id === nodeId);
-      return { id: nodeId, name: node?.name ?? nodeId, count };
-    });
-
-  const avgConnections = nodes.length > 0 ? (edges.length * 2 / nodes.length).toFixed(1) : "0";
-
-  const categoryBreakdown = [
-    { label: t.projectOverview.code, color: "var(--color-node-file)", count: (typeCounts["file"] ?? 0) + (typeCounts["function"] ?? 0) + (typeCounts["class"] ?? 0) + (typeCounts["module"] ?? 0) + (typeCounts["concept"] ?? 0) },
-    { label: t.projectOverview.config, color: "var(--color-node-config)", count: typeCounts["config"] ?? 0 },
-    { label: t.projectOverview.docs, color: "var(--color-node-document)", count: typeCounts["document"] ?? 0 },
-    { label: t.projectOverview.infra, color: "var(--color-node-service)", count: (typeCounts["service"] ?? 0) + (typeCounts["resource"] ?? 0) + (typeCounts["pipeline"] ?? 0) },
-    { label: t.projectOverview.data, color: "var(--color-node-table)", count: (typeCounts["table"] ?? 0) + (typeCounts["endpoint"] ?? 0) + (typeCounts["schema"] ?? 0) },
-    { label: t.projectOverview.domain, color: "var(--color-node-concept)", count: (typeCounts["domain"] ?? 0) + (typeCounts["flow"] ?? 0) + (typeCounts["step"] ?? 0) },
-  ];
-  const hasNonCodeNodes = categoryBreakdown.some((c) => c.label !== t.projectOverview.code && c.count > 0);
-
   return (
-    <div className="h-full w-full overflow-auto p-5 animate-fade-slide-in">
-      {/* Project name */}
-      <h2 className="font-heading text-2xl text-text-primary mb-1">{project.name}</h2>
-      <p className="text-sm text-text-secondary leading-relaxed mb-6">{project.description}</p>
-
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-elevated rounded-lg p-3 border border-border-subtle">
-          <div className="text-2xl font-mono font-medium text-accent">{nodes.length}</div>
-          <div className="text-[11px] text-text-muted uppercase tracking-wider mt-1">{t.projectOverview.nodes}</div>
-        </div>
-        <div className="bg-elevated rounded-lg p-3 border border-border-subtle">
-          <div className="text-2xl font-mono font-medium text-accent">{edges.length}</div>
-          <div className="text-[11px] text-text-muted uppercase tracking-wider mt-1">{t.projectOverview.edges}</div>
-        </div>
-        <div className="bg-elevated rounded-lg p-3 border border-border-subtle">
-          <div className="text-2xl font-mono font-medium text-accent">{layers.length}</div>
-          <div className="text-[11px] text-text-muted uppercase tracking-wider mt-1">{t.projectOverview.layers}</div>
-        </div>
-        <div className="bg-elevated rounded-lg p-3 border border-border-subtle">
-          <div className="text-2xl font-mono font-medium text-accent">{Object.keys(typeCounts).length}</div>
-          <div className="text-[11px] text-text-muted uppercase tracking-wider mt-1">{t.projectOverview.types}</div>
-        </div>
-      </div>
-
-      {/* File Types breakdown */}
-      {hasNonCodeNodes && (
-        <div className="mb-5">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-2">{t.projectOverview.fileTypes}</h3>
-          <div className="space-y-1.5">
-            {categoryBreakdown.filter((c) => c.count > 0).map((cat) => (
-              <div key={cat.label} className="flex items-center gap-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ backgroundColor: cat.color }}
-                />
-                <span className="text-xs text-text-secondary flex-1">{cat.label}</span>
-                <span className="text-xs font-mono text-text-muted">{cat.count}</span>
-              </div>
-            ))}
+    <div className="h-full w-full overflow-auto px-4 pb-5 pt-4 animate-fade-slide-in">
+      <section className="moya-liquid-card p-1.5">
+        <div className="moya-liquid-core p-6">
+          <div className="inline-flex items-center rounded-full bg-white/55 border border-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            First look
           </div>
-        </div>
-      )}
 
-      {/* Languages */}
-      {project.languages.length > 0 && (
-        <div className="mb-5">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-2">{t.projectOverview.languages}</h3>
-          <div className="flex flex-wrap gap-1.5">
-            {project.languages.map((lang) => (
-              <span key={lang} className="text-[11px] glass text-text-secondary px-2.5 py-1 rounded-full">
-                {lang}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+          <h2 className="font-heading text-[28px] leading-[1.06] font-bold text-text-primary tracking-normal mt-5">
+            See the shape first.
+          </h2>
 
-      {/* Frameworks */}
-      {project.frameworks.length > 0 && (
-        <div className="mb-5">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-2">{t.projectOverview.frameworks}</h3>
-          <div className="flex flex-wrap gap-1.5">
-            {project.frameworks.map((fw) => (
-              <span key={fw} className="text-[11px] glass text-text-secondary px-2.5 py-1 rounded-full">
-                {fw}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+          <p className="text-sm text-text-secondary leading-relaxed mt-4">
+            Let the project come into focus before the details arrive. Stay with
+            the overview, or open any part when you are ready for the story underneath.
+          </p>
 
-      {/* Node Type Breakdown */}
-      <div className="mb-5">
-        <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-3">{t.projectOverview.nodeTypeDistribution}</h3>
-        <div className="space-y-2">
-          {Object.entries(typeCounts)
-            .sort((a, b) => b[1] - a[1])
-            .map(([type, count]) => {
-              const percentage = ((count / nodes.length) * 100).toFixed(0);
-              return (
-                <div key={type}>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-text-secondary capitalize">{type}</span>
-                    <span className="text-text-muted font-mono">{count} ({percentage}%)</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-elevated rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-accent/50 rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      </div>
-
-      {/* Complexity Breakdown */}
-      {Object.values(complexityCounts).some((c) => c > 0) && (
-        <div className="mb-5">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-3">{t.projectOverview.complexityDistribution}</h3>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-elevated rounded-lg p-2 border border-border-subtle text-center">
-              <div className="text-lg font-mono font-medium text-green-400">{complexityCounts.simple}</div>
-              <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">{t.projectOverview.simple}</div>
-            </div>
-            <div className="bg-elevated rounded-lg p-2 border border-border-subtle text-center">
-              <div className="text-lg font-mono font-medium text-yellow-400">{complexityCounts.moderate}</div>
-              <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">{t.projectOverview.moderate}</div>
-            </div>
-            <div className="bg-elevated rounded-lg p-2 border border-border-subtle text-center">
-              <div className="text-lg font-mono font-medium text-red-400">{complexityCounts.complex}</div>
-              <div className="text-[10px] text-text-muted uppercase tracking-wider mt-0.5">{t.projectOverview.complex}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Top Connected Nodes */}
-      {topNodes.length > 0 && (
-        <div className="mb-5">
-          <h3 className="text-[11px] font-semibold text-accent uppercase tracking-wider mb-3">{t.projectOverview.mostConnectedNodes}</h3>
-          <div className="space-y-2">
-            {topNodes.map((node, idx) => (
-              <div
-                key={node.id}
-                className="flex items-center gap-2 text-xs bg-elevated rounded-lg p-2 border border-border-subtle"
+          <div className="mt-6 space-y-2.5">
+            {hasTour && (
+              <button
+                type="button"
+                onClick={startTour}
+                className="w-full group bg-accent text-white text-sm font-semibold py-3 pl-4 pr-2 rounded-full active:scale-[0.98] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center justify-between shadow-[0_18px_36px_rgba(198,111,146,0.22)]"
               >
-                <div className="w-5 h-5 shrink-0 rounded-full bg-accent/20 flex items-center justify-center text-[10px] font-bold text-accent">
-                  {idx + 1}
-                </div>
-                <span className="flex-1 text-text-primary truncate">{node.name}</span>
-                <span className="text-text-muted font-mono shrink-0">{node.count}</span>
-              </div>
-            ))}
+                <span>Guide me through</span>
+                <span className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 group-hover:-translate-y-px">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+                  </svg>
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setAreasOpen((value) => !value)}
+              className="w-full group rounded-full bg-white/58 border border-white/70 text-text-secondary hover:text-text-primary px-4 py-3 text-sm font-semibold active:scale-[0.99] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center justify-between shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_12px_26px_rgba(64,47,75,0.06)]"
+            >
+              <span>{areasOpen ? "Return to overview" : "Show me more"}</span>
+              <span className={`h-7 w-7 rounded-full bg-accent/10 text-accent flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${areasOpen ? "rotate-180" : "group-hover:translate-y-0.5"}`}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                </svg>
+              </span>
+            </button>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Average Connections */}
-      <div className="mb-5 bg-elevated rounded-lg p-3 border border-border-subtle">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-text-secondary">{t.projectOverview.avgConnectionsPerNode}</span>
-          <span className="text-lg font-mono font-medium text-accent">{avgConnections}</span>
-        </div>
-      </div>
-
-      {/* Analyzed at */}
-      <div className="text-[11px] text-text-muted mb-6">
-        {t.common.analyzed}: {new Date(project.analyzedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-      </div>
-
-      {/* Start Tour button */}
-      {hasTour && (
-        <button
-          onClick={startTour}
-          className="w-full bg-accent/10 border border-accent/30 text-accent text-sm font-medium py-2.5 px-4 rounded-lg hover:bg-accent/20 transition-all duration-200"
-        >
-          {t.common.startGuidedTour}
-        </button>
+      {areasOpen && mainAreas.length > 0 && (
+        <section className="mt-3 space-y-2 animate-fade-slide-in">
+          {mainAreas.map((layer) => (
+            <button
+              key={layer.id}
+              type="button"
+              onClick={() => drillIntoLayer(layer.id)}
+              className="w-full moya-liquid-list-item text-left group"
+            >
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-text-primary truncate">
+                  {layer.name}
+                </span>
+                {layer.description && (
+                  <span className="block text-xs text-text-muted leading-relaxed mt-1 line-clamp-2">
+                    {layer.description}
+                  </span>
+                )}
+              </span>
+              <span className="h-8 w-8 rounded-full bg-accent/10 text-accent flex items-center justify-center shrink-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </button>
+          ))}
+        </section>
       )}
     </div>
   );

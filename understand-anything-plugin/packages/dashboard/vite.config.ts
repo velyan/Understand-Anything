@@ -11,6 +11,7 @@ import crypto from "crypto";
 // to fetch knowledge-graph.json or diff-overlay.json.
 const ACCESS_TOKEN = process.env.UNDERSTAND_ACCESS_TOKEN || crypto.randomBytes(16).toString("hex");
 const MAX_SOURCE_FILE_BYTES = 1024 * 1024;
+const MOYA_EMBED = process.env.VITE_MOYA_EMBED === "true";
 
 function graphFileCandidates(fileName: string): string[] {
   const graphDir = process.env.GRAPH_DIR;
@@ -177,6 +178,8 @@ function readSourceFile(url: URL) {
 }
 
 export default defineConfig({
+  base: MOYA_EMBED ? "./" : "/",
+
   test: {
     environment: "node",
     include: ["src/**/__tests__/**/*.test.ts"],
@@ -232,6 +235,13 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    {
+      name: "moya-embed-remove-demo-graph",
+      closeBundle() {
+        if (!MOYA_EMBED) return;
+        fs.rmSync(path.resolve(__dirname, "dist/knowledge-graph.json"), { force: true });
+      },
+    },
     {
       name: "serve-knowledge-graph",
       configureServer(server) {

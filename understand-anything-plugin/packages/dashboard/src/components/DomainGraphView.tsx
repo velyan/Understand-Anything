@@ -4,8 +4,6 @@ import {
   ReactFlowProvider,
   Background,
   BackgroundVariant,
-  Controls,
-  MiniMap,
 } from "@xyflow/react";
 import type { Edge, Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -75,12 +73,7 @@ function buildDomainOverview(graph: KnowledgeGraph): BuiltGraph {
       id: `cd-${i}-${e.source}-${e.target}`,
       source: e.source,
       target: e.target,
-      label: e.description ?? "",
       style: { stroke: "var(--color-accent)", strokeDasharray: "6 3", strokeWidth: 2 },
-      labelStyle: { fill: "var(--color-text-muted)", fontSize: 10 },
-      labelBgStyle: { fill: "var(--color-surface)", fillOpacity: 0.9 },
-      labelBgPadding: [6, 4] as [number, number],
-      labelBgBorderRadius: 4,
       animated: true,
     }));
 
@@ -111,12 +104,6 @@ function buildDomainDetail(
     stepOrderMap.set(edge.target, edge.weight);
   }
 
-  // Count steps per flow
-  const stepCountMap = new Map<string, number>();
-  for (const edge of stepEdges) {
-    stepCountMap.set(edge.source, (stepCountMap.get(edge.source) ?? 0) + 1);
-  }
-
   const dims = new Map<string, { width: number; height: number }>();
 
   const flowRfNodes: FlowFlowNode[] = flowNodes.map((node) => {
@@ -131,7 +118,6 @@ function buildDomainDetail(
         summary: node.summary,
         entryPoint: meta?.entryPoint as string | undefined,
         entryType: meta?.entryType as string | undefined,
-        stepCount: stepCountMap.get(node.id) ?? 0,
         flowId: node.id,
       },
     };
@@ -237,7 +223,7 @@ function DomainGraphViewInner() {
           <button
             type="button"
             onClick={() => clearActiveDomain()}
-            className="px-3 py-1.5 text-xs rounded-lg bg-elevated border border-border-subtle text-text-secondary hover:text-text-primary transition-colors"
+            className="px-3 py-2 text-xs rounded-full bg-white/80 border border-border-subtle text-text-secondary hover:text-text-primary hover:border-accent/25 transition-colors shadow-[0_10px_24px_rgba(64,47,75,0.08)]"
           >
             {t.domainView.backToDomains}
           </button>
@@ -258,12 +244,6 @@ function DomainGraphViewInner() {
           gap={20}
           size={1}
           color="var(--color-border-subtle)"
-        />
-        <Controls />
-        <MiniMap
-          nodeColor="var(--color-accent)"
-          maskColor="var(--glass-bg)"
-          className="!bg-surface !border !border-border-subtle"
         />
       </ReactFlow>
     </div>
